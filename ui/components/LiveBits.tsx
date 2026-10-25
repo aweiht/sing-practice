@@ -115,13 +115,13 @@ export function Lyrics({ compact = false }: { compact?: boolean }) {
   // the line (and the next-line preview) changes LINE_LEAD s before it's sung; its words still fill on the singing
   const i = live.lyricIndex(t);
   const cur = i >= 0 ? lyr[i] : null, next = lyr[i + 1];
-  if (!lyr.length) return <p className={`text-center text-sm text-ink-400 ${compact ? "truncate" : ""}`}>{live.lyricsOn ? "No synced lyrics for this song" : "Lyrics are off (Settings)"}</p>;
+  if (!lyr.length) return <p className={`text-center text-sm text-ink-400 ${compact ? "truncate" : ""}`}>{live.lyricsOn ? "这首歌没有同步歌词" : "歌词已关闭（可在“设置”中开启）"}</p>;
   // the place in the song isn't settled yet: a calm wait rather than words that then jump (see live.placeReady)
   const perf = perfNow();
   if (!live.placeReady(perf)) return (
     <div className={compact ? "min-w-0 text-left" : "mx-auto max-w-4xl px-6 text-center"}>
       <div className={compact ? "" : "flex min-h-[2lh] items-end justify-center text-[clamp(1.4rem,2.6vw,2.2rem)] leading-tight"}>
-        <p className={`font-medium tracking-tight text-ink-500 ${compact ? "text-sm" : "text-[0.7em]"}`}>Finding your place…</p>
+        <p className={`font-medium tracking-tight text-ink-500 ${compact ? "text-sm" : "text-[0.7em]"}`}>正在确认播放位置…</p>
       </div>
       {!compact && <p className="mt-1 min-h-[1.5rem] text-base text-ink-400">{" "}</p>}
     </div>
@@ -152,7 +152,7 @@ export function Lyrics({ compact = false }: { compact?: boolean }) {
             </p>
           ) : (
             <p className={`font-medium tracking-tight text-ink-500 ${compact ? "text-sm" : "text-[0.7em]"}`}>
-              ♪ <span className="tabular">{cur ? "Next line" : "First line"} in {Math.ceil(wait)} s</span>
+              ♪ <span className="tabular">{cur ? "下一句" : "第一句"}将在 {Math.ceil(wait)} 秒后显示</span>
             </p>
           )}
         </div>
@@ -196,8 +196,8 @@ export function ScoreAndHint() {
   if (song?.mode === "learn" || blind) {
     return (
       <div className="text-right">
-        <div className="text-[10px] font-medium uppercase tracking-[.14em] text-ink-400">Score</div>
-        <div className="text-sm font-medium text-ink-300">after the song</div>
+        <div className="text-[10px] font-medium uppercase tracking-[.14em] text-ink-400">得分</div>
+        <div className="text-sm font-medium text-ink-300">歌曲结束后</div>
       </div>
     );
   }
@@ -205,10 +205,10 @@ export function ScoreAndHint() {
     <div className="flex items-center gap-4">
       <div className={`flex h-8 items-center rounded-full px-3 text-sm font-semibold transition-all duration-300 ${
         hint === "ok" ? "bg-good/12 text-good" : hint ? "bg-off/12 text-off" : "opacity-0"}`}>
-        {hint === "ok" ? "✓ On pitch" : hint === "up" ? "▲ Sing higher" : hint === "down" ? "▼ Sing lower" : "·"}
+        {hint === "ok" ? "✓ 音准合适" : hint === "up" ? "▲ 再唱高一些" : hint === "down" ? "▼ 再唱低一些" : "·"}
       </div>
       <div className="text-right">
-        <div className="text-[10px] font-medium uppercase tracking-[.14em] text-ink-400">Score</div>
+        <div className="text-[10px] font-medium uppercase tracking-[.14em] text-ink-400">得分</div>
         <div className="tabular text-3xl font-bold leading-none tracking-tight">{score ?? "–"}</div>
       </div>
     </div>
@@ -265,13 +265,13 @@ export function Transport() {
   const btn = "grid h-9 w-9 place-items-center rounded-full text-ink-200 transition hover:bg-white/8 hover:text-white active:scale-95";
   return (
     <div className="glass flex items-center gap-1 rounded-full px-2 py-1 shadow-lg shadow-black/30">
-      <button className={btn} title="Start the song over (R)" onClick={() => control("restart")}><Icon d={ICONS.restart} /></button>
-      <button className={btn} title="Previous (←)" onClick={() => control("previous")}><Icon d={ICONS.prev} /></button>
+      <button className={btn} title="从头播放（R）" onClick={() => control("restart")}><Icon d={ICONS.restart} /></button>
+      <button className={btn} title="上一首（←）" onClick={() => control("previous")}><Icon d={ICONS.prev} /></button>
       <button className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink-950 shadow transition hover:scale-105 active:scale-95"
-              title={playing ? "Pause (space)" : "Play (space)"} onClick={() => control("playpause")}>
+              title={playing ? "暂停（空格）" : "播放（空格）"} onClick={() => control("playpause")}>
         <Icon d={playing ? ICONS.pause : ICONS.play} filled />
       </button>
-      <button className={`${btn} ${lull ? "text-accent-300" : ""}`} title={lull ? "Skip to the singing (→)" : "Next song (→)"}
+      <button className={`${btn} ${lull ? "text-accent-300" : ""}`} title={lull ? "跳到演唱部分（→）" : "下一首（→）"}
               onClick={() => { if (!skipToSinging()) control("next"); }}><Icon d={ICONS.next} /></button>
     </div>
   );
@@ -314,19 +314,19 @@ function TakeChip({ t }: { t: Take }) {
     <>
       <div className="tabular text-xl font-bold leading-none">{t.score}</div>
       <div className="text-[10px] text-ink-400 group-hover:text-accent-300">
-        {t.mode === "learn" || t.blind ? "blind · " : ""}{t.notes_total ? `${t.notes_hit}/${t.notes_total} notes` : "view"} →
+        {t.mode === "learn" || t.blind ? "盲唱 · " : ""}{t.notes_total ? `${t.notes_hit}/${t.notes_total} 个音符` : "查看记录"} →
       </div>
     </>
-  ) : t.status === "failed" ? <div className="text-xs text-off">couldn’t score</div>
+  ) : t.status === "failed" ? <div className="text-xs text-off">评分失败</div>
     : readyOnly ? (
       t.status === "learned" && t.track_id ? (
         <button onClick={e => { e.preventDefault(); playTrack(t.track_id!); }}
-                className="rounded-full bg-accent-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-accent-400">Sing now</button>
-      ) : <div className="text-right text-[11px] text-ink-300">{Math.round(100 * (t.learned ?? 0))}% learned<br /><span className="text-ink-400">play it through</span></div>
+                className="rounded-full bg-accent-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-accent-400">现在演唱</button>
+      ) : <div className="text-right text-[11px] text-ink-300">已学习 {Math.round(100 * (t.learned ?? 0))}%<br /><span className="text-ink-400">完整播放以完成</span></div>
     ) : (
       <>
         <div className="tabular text-sm font-semibold text-ink-300">{learning ? "" : t.live != null ? Math.round(t.live) : "–"}</div>
-        <div className="tabular text-[10px] text-ink-400">{pct != null ? `learning… ${pct}%` : job?.stage === "queued" ? "waiting to learn" : learning ? "learning…" : "scoring…"}</div>
+        <div className="tabular text-[10px] text-ink-400">{pct != null ? `正在学习… ${pct}%` : job?.stage === "queued" ? "等待学习" : learning ? "正在学习…" : "正在评分…"}</div>
       </>
     );
   const inner = (
@@ -334,7 +334,7 @@ function TakeChip({ t }: { t: Take }) {
       {(learning || t.status === "scoring") && pct == null && <div className="shimmer absolute inset-0" />}
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{t.name}</div>
-        <div className="truncate text-xs text-ink-400">{t.status === "learned" ? "Learned · ready to sing" : t.artist}</div>
+        <div className="truncate text-xs text-ink-400">{t.status === "learned" ? "已学会 · 可以演唱" : t.artist}</div>
       </div>
       <div className="relative text-right">{right}</div>
       {pct != null && <div className="absolute inset-x-0 bottom-0 h-0.5 bg-white/6">
@@ -352,11 +352,11 @@ function TimingHint({ uid, name }: { uid: string; name: string }) {
   if (gone === uid) return null;
   return (
     <span className="flex items-center rounded-full text-xs text-ink-400">
-      <Link href="/settings#output-timing" title="Lyrics early or late on these? Tap along to a click to measure their delay"
+      <Link href="/settings#output-timing" title="歌词或音符显示偏早或偏晚？跟随节拍点击，测量耳机延迟。"
             className="rounded-full px-2.5 py-1 transition hover:bg-white/6 hover:text-ink-100">
-        Check timing on <span className="inline-block max-w-32 truncate align-bottom">{name || "these headphones"}</span> ›
+        校准 <span className="inline-block max-w-32 truncate align-bottom">{name || "此耳机"}</span> ›
       </Link>
-      <button onClick={() => { setGone(uid); void dismissTimingHint(uid); }} aria-label="Don’t suggest this again"
+      <button onClick={() => { setGone(uid); void dismissTimingHint(uid); }} aria-label="不再提示"
               className="grid h-5 w-5 place-items-center rounded-full text-ink-500 transition hover:bg-white/8 hover:text-ink-100">×</button>
     </span>
   );
@@ -368,17 +368,17 @@ export function StatusChips() {
   const chip = "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-ink-300";
   return (
     <div className="flex flex-wrap items-center gap-1">
-      <span className={chip} title="Connection to the engine">
-        <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-good" : "bg-off"}`} />{connected ? "Live" : "Reconnecting"}
+      <span className={chip} title="与音频引擎的连接状态">
+        <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-good" : "bg-off"}`} />{connected ? "已连接" : "正在重连"}
       </span>
-      <span className={chip} title={`How long after the music app plays you hear it; scoring allows for it${status.output?.correction_ms != null ? " (from your timing check in Settings)" : ""}`}>
-        <Icon d={ICONS.head} size={14} />{(status.output?.reported_ms ?? out) > 100 ? "Bluetooth" : "Wired / speakers"} · {out} ms
+      <span className={chip} title={`音乐应用播放后，声音传到你耳中的延迟；评分已作补偿${status.output?.correction_ms != null ? "（使用“设置”中的手动校准值）" : ""}`}>
+        <Icon d={ICONS.head} size={14} />{(status.output?.reported_ms ?? out) > 100 ? "蓝牙" : "有线/扬声器"} · {out} 毫秒
       </span>
       {TIMING_CHECK_VERIFIED && status.output?.suggest && <TimingHint uid={status.output.uid} name={status.output.name} />}
       {status.mic_device !== undefined && (
-        <Link href="/settings" title="The microphone OnKey listens to (choose another in Settings)"
+        <Link href="/settings" title="随声练使用的麦克风（可在“设置”中更换）"
               className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition hover:bg-white/6 ${status.mic_device === null ? "text-amber-200" : "text-ink-300"}`}>
-          <Icon d={ICONS.mic} size={14} /><span className="max-w-44 truncate">{status.mic_device ?? "No microphone"}</span>
+          <Icon d={ICONS.mic} size={14} /><span className="max-w-44 truncate">{status.mic_device ?? "未连接麦克风"}</span>
         </Link>
       )}
     </div>
@@ -392,22 +392,22 @@ export function SingSwitches() {
   return (
     <div className="flex flex-wrap items-center justify-end gap-1">
       {song?.mode === "sing" && (
-        <button onClick={() => setBlind(!blind)} title="Hide the notes ahead to test yourself (B)"
+        <button onClick={() => setBlind(!blind)} title="隐藏提前显示的音符，自我测试（B）"
                 className={`flex items-center gap-2 rounded-full px-2.5 py-1 text-xs transition hover:bg-white/6 ${blind ? "text-ink-100" : "text-ink-300"}`}>
           <span className={`relative h-4 w-7 rounded-full transition ${blind ? "bg-ink-500" : "bg-accent-500"}`}>
             <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${blind ? "left-0.5" : "left-3.5"}`} />
           </span>
-          Notes ahead
+          提前显示音符
         </button>
       )}
       {status.echo_cancel != null && (
         <button onClick={() => setEchoCancel(!status.echo_cancel)}
-                title="Removes the music's sound from your microphone. Turn off to test with the song itself playing from speakers."
+                title="从麦克风中消除音乐声。关闭后可在扬声器播放歌曲时进行测试。"
                 className={`flex items-center gap-2 rounded-full px-2.5 py-1 text-xs transition hover:bg-white/6 ${status.echo_cancel ? "text-ink-300" : "text-ink-100"}`}>
           <span className={`relative h-4 w-7 rounded-full transition ${status.echo_cancel ? "bg-accent-500" : "bg-ink-500"}`}>
             <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${status.echo_cancel ? "left-3.5" : "left-0.5"}`} />
           </span>
-          Echo cancel
+          消除音乐声
         </button>
       )}
       {song?.mode === "sing" && <DancerToggle />}
@@ -419,12 +419,12 @@ export function SingSwitches() {
 export function DancerToggle() {
   const on = useDancer();
   return (
-    <button onClick={() => setDancer(!on)} title="A stick figure dancing to the song while you sing"
+    <button onClick={() => setDancer(!on)} title="演唱时随歌曲节奏起舞的小人"
             className={`flex items-center gap-2 rounded-full px-2.5 py-1 text-xs transition hover:bg-white/6 ${on ? "text-ink-300" : "text-ink-100"}`}>
       <span className={`relative h-4 w-7 rounded-full transition ${on ? "bg-accent-500" : "bg-ink-500"}`}>
         <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${on ? "left-3.5" : "left-0.5"}`} />
       </span>
-      Dancer
+      舞者
     </button>
   );
 }
@@ -453,9 +453,9 @@ export function FinishSong() {
     <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
       <button onClick={() => finishTake()}
               className="pointer-events-auto glass flex animate-rise items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-ink-100 shadow-lg shadow-black/40 transition hover:border-accent-400/40 hover:text-white">
-        That was the last line
+        已经唱到最后一句
         <span className="text-ink-500">·</span>
-        <span className="text-accent-300">Finish and see your score</span>
+        <span className="text-accent-300">结束并查看得分</span>
       </button>
     </div>
   );
@@ -469,9 +469,9 @@ export function SkipToSinging() {
     <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
       <button onClick={() => skipToSinging()}
               className="pointer-events-auto glass flex animate-rise items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-ink-100 shadow-lg shadow-black/40 transition hover:border-accent-400/40 hover:text-white">
-        Singing in {Math.ceil(lull.wait)}s
+        {Math.ceil(lull.wait)} 秒后开始演唱
         <span className="text-ink-500">·</span>
-        <span className="text-accent-300">Skip ahead</span>
+        <span className="text-accent-300">跳过前奏</span>
         <Icon d={ICONS.next} size={14} />
       </button>
     </div>
@@ -506,7 +506,7 @@ export function PitchStrip() {
   // a small grey dot that fades in as you near the note: nearly invisible when far out, clear when in tune
   const alpha = Number.isNaN(err) ? 0 : Math.max(0, 1 - Math.abs(err) / 200) ** 1.5;
   return (
-    <div className="relative h-2 w-full rounded-full bg-white/6" title="Your pitch against the current note">
+    <div className="relative h-2 w-full rounded-full bg-white/6" title="当前音符与你的音高对比">
       <div className="absolute inset-y-0 left-1/2 w-px bg-white/25" />
       {pos != null && <div className="absolute top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-200"
                            style={{ left: `${50 + pos * 50}%`, opacity: alpha, transition: "left 60ms linear, opacity 120ms linear" }} />}
@@ -533,8 +533,8 @@ export function TakeToast() {
   if (!shown) return null;
   const body = shown.status === "done"
     ? <><span className="tabular text-lg font-bold text-white">{shown.score}</span>
-        {shown.report && <Link href={`/take?id=${encodeURIComponent(shown.report)}`} className="text-accent-300 hover:text-white">View</Link>}</>
-    : <span className="text-good">Learned · notes ready next time</span>;
+        {shown.report && <Link href={`/take?id=${encodeURIComponent(shown.report)}`} className="text-accent-300 hover:text-white">查看</Link>}</>
+    : <span className="text-good">已学会 · 下次练习时显示音符</span>;
   return (
     <div className="glass flex min-w-0 animate-rise items-center gap-3 rounded-2xl px-4 py-2 text-sm shadow-lg shadow-black/30">
       <span className="min-w-0 truncate text-ink-200">{shown.name}</span>

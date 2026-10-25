@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "OnKey",
+  "productName": "随声练",
   "version": "0.1.0",
-  "identifier": "audio.onkey.app",
+  "identifier": "io.github.aweiht.sing-practice",
   "build": {
     "frontendDist": "../ui/out",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "OnKey",
+        "title": "随声练",
         "width": 1280,
         "height": 820,
         "minWidth": 900,
@@ -38,14 +38,6 @@
     },
     "macOSPrivateApi": true
   },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5RjUzMDNDNkU1OEQ4REQKUldUZDJGaHVQREQxV2V6RTBQZjZZY2N5eU9xV1dkeVN2VGFkOTl5T0JZK2g5dXlLV0JDVFpCN0EK",
-      "endpoints": [
-        "https://github.com/dsmurrell/onkey/releases/latest/download/latest.json"
-      ]
-    }
-  },
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": false,
@@ -61,7 +53,8 @@
       "icons/icon.ico"
     ],
     "category": "Music",
-    "shortDescription": "A singing trainer: learn to sing the songs you love",
+    "shortDescription": "跟着喜欢的歌曲练唱，查看音准",
+    "copyright": "随声练基于 OnKey 开源项目，保留原项目 MIT 许可与版权声明。",
     "macOS": {
       "minimumSystemVersion": "14.2"
     },

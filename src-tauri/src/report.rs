@@ -14,7 +14,7 @@ use std::sync::Mutex;
 use serde_json::{json, Value};
 
 /// Where an issue is opened (the "Open a GitHub issue" button).
-pub const NEW_ISSUE_URL: &str = "https://github.com/dsmurrell/onkey/issues/new";
+pub const NEW_ISSUE_URL: &str = "https://github.com/aweiht/sing-practice/issues/new";
 
 /// The report being prepared: its folder, and OnKey's data folder it was made from.
 static STAGED: Mutex<Option<(PathBuf, PathBuf)>> = Mutex::new(None);
@@ -219,12 +219,12 @@ pub fn prepare(data: &Path, take: Option<&str>, days: u32) -> Result<Value, Stri
 /// The report's files in `dir` (see `prepare`).
 pub fn stage(data: &Path, dir: &Path, take: Option<&str>, days: u32, r: &Redact, settings: Value) -> Result<Vec<Value>, String> {
     let _ = std::fs::remove_dir_all(dir);
-    std::fs::create_dir_all(dir.join("logs")).map_err(|e| e.to_string())?;
-    std::fs::create_dir_all(dir.join("takes")).map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(dir.join("logs")).map_err(|e| format!("无法创建问题报告目录：{e}"))?;
+    std::fs::create_dir_all(dir.join("takes")).map_err(|e| format!("无法创建问题报告目录：{e}"))?;
     let rec = data.join("records");
     let mut files: Vec<Value> = Vec::new();
     let mut add = |name: String, body: &str, what: String| -> Result<(), String> {
-        std::fs::write(dir.join(&name), body).map_err(|e| e.to_string())?;
+        std::fs::write(dir.join(&name), body).map_err(|e| format!("无法写入问题报告文件 {name}：{e}"))?;
         files.push(json!({"name": name, "bytes": body.len(), "what": what}));
         Ok(())
     };
@@ -250,7 +250,7 @@ pub fn stage(data: &Path, dir: &Path, take: Option<&str>, days: u32, r: &Redact,
             }
         }
         let name = format!("logs/{}", p.file_name().unwrap_or_default().to_string_lossy());
-        add(name, &out, "OnKey's log for that day".into())?;
+        add(name, &out, "随声练当天的运行日志".into())?;
     }
     // the plays' summaries: the take asked about, and every play in those days
     let mut takes: Vec<PathBuf> = std::fs::read_dir(rec.join("takes")).into_iter().flatten().flatten().map(|e| e.path())
@@ -267,37 +267,39 @@ pub fn stage(data: &Path, dir: &Path, take: Option<&str>, days: u32, r: &Redact,
         if r.quotes_lyrics(&body) {
             continue;       // (a summary never holds lyrics; one that seems to isn't sent)
         }
-        let what = format!("{}a play's summary: {} - {}", if asked { "the take reported: " } else { "" },
+        let what = format!("{}演唱记录：{} - {}", if asked { "本次反馈涉及的" } else { "" },
                            v["track"]["artist"].as_str().unwrap_or("?"), v["track"]["name"].as_str().unwrap_or("?"));
         add(format!("takes/{name}.json"), &body, r.text(&what))?;
     }
     if let Ok(b) = std::fs::read_to_string(rec.join("builds.json")) {
-        add("builds.json".into(), &r.text(&b), "the OnKey builds that ran on this Mac".into())?;
+        add("builds.json".into(), &r.text(&b), "这台 Mac 运行过的随声练版本".into())?;
     }
     let about = json!({"report": 1, "made": crate::store::now_iso(), "build": crate::records::build(), "mac": crate::records::mac(),
         "settings": settings_for_report(&settings), "days": days, "take": take, "log_lines_left_out": left_out,
         "description": "", "contains": files.iter().map(|f| f["name"].clone()).collect::<Vec<_>>(),
-        "never_contains": "lyrics, audio, song files, your user name or home folder, microphone names"});
+        "never_contains": "歌词、音频、歌曲文件、用户名或个人目录、麦克风名称"});
     let body = serde_json::to_string_pretty(&about).unwrap_or_default();
-    std::fs::write(dir.join("about.json"), &body).map_err(|e| e.to_string())?;
-    files.push(json!({"name": "about.json", "bytes": body.len(), "what": "OnKey's version, this Mac, the settings, and what you wrote"}));
+    std::fs::write(dir.join("about.json"), &body).map_err(|e| format!("无法写入问题报告说明文件：{e}"))?;
+    files.push(json!({"name": "about.json", "bytes": body.len(), "what": "随声练版本信息、这台 Mac、设置和你填写的描述"}));
     Ok(files)
 }
 
 /// Your description into the report being prepared (its about.json), then the whole of it zipped to `to`.
 pub fn save(description: &str, to: &Path) -> Result<(), String> {
-    let (dir, data) = STAGED.lock().unwrap().clone().ok_or("no report prepared")?;
+    let (dir, data) = STAGED.lock().unwrap().clone().ok_or("问题报告尚未准备好")?;
     finish(&dir, description, to, &Redact::for_data(&data))
 }
 
 pub fn finish(dir: &Path, description: &str, to: &Path, r: &Redact) -> Result<(), String> {
     let about = dir.join("about.json");
-    let mut v: Value = serde_json::from_slice(&std::fs::read(&about).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+    let mut v: Value = serde_json::from_slice(&std::fs::read(&about).map_err(|e| format!("无法读取问题报告说明文件：{e}"))?)
+        .map_err(|e| format!("无法解析问题报告说明文件：{e}"))?;
     // (a line of it quoting lyrics is left out too)
     let said: String = description.chars().take(4000).collect();
     v["description"] = json!(said.lines().map(|l| r.line(l).unwrap_or_else(|| "[lyrics left out]".into())).collect::<Vec<_>>().join("\n"));
-    std::fs::write(&about, serde_json::to_string_pretty(&v).unwrap_or_default()).map_err(|e| e.to_string())?;
-    zip_dir(dir, to).map_err(|e| e.to_string())
+    std::fs::write(&about, serde_json::to_string_pretty(&v).unwrap_or_default())
+        .map_err(|e| format!("无法保存问题报告说明：{e}"))?;
+    zip_dir(dir, to).map_err(|e| format!("无法打包问题报告：{e}"))
 }
 
 /// The report's folder (to show it in Finder).
@@ -377,12 +379,12 @@ fn dos_time() -> (u16, u16) {
     ((h << 11) | (mi << 5) | (s / 2), ((y.saturating_sub(1980)) << 9) | (mo << 5) | d)
 }
 
-/// Where to save it: macOS's save panel (on the main thread), starting at ~/Desktop/OnKey-report-<date>.zip. None:
+/// Where to save it: macOS's save panel (on the main thread), starting at ~/Desktop/随声练-问题报告-<date>.zip. None:
 /// cancelled.
 #[cfg(target_os = "macos")]
 pub fn ask_where(app: &tauri::AppHandle) -> Option<PathBuf> {
     let (tx, rx) = std::sync::mpsc::channel();
-    let name = format!("OnKey-report-{}.zip", crate::store::format_time(std::time::SystemTime::now(), "%Y-%m-%d"));
+    let name = format!("随声练-问题报告-{}.zip", crate::store::format_time(std::time::SystemTime::now(), "%Y-%m-%d"));
     let desktop = std::env::var("HOME").map(|h| format!("{h}/Desktop")).unwrap_or_default();
     let _ = app.run_on_main_thread(move || {
         use objc2_app_kit::{NSModalResponseOK, NSSavePanel};
@@ -392,7 +394,7 @@ pub fn ask_where(app: &tauri::AppHandle) -> Option<PathBuf> {
         panel.setNameFieldStringValue(&NSString::from_str(&name));
         panel.setDirectoryURL(Some(&NSURL::fileURLWithPath(&NSString::from_str(&desktop))));
         panel.setCanCreateDirectories(true);
-        panel.setMessage(Some(&NSString::from_str("OnKey's records for a bug report: logs and numbers, no lyrics or audio.")));
+        panel.setMessage(Some(&NSString::from_str("用于排查问题的日志和统计信息；不含歌词或音频。")));
         let chosen = (panel.runModal() == NSModalResponseOK).then(|| panel.URL()).flatten().and_then(|u| u.path()).map(|p| PathBuf::from(p.to_string()));
         let _ = tx.send(chosen);
     });

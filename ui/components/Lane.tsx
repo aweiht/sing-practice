@@ -49,7 +49,7 @@ function judge(s: number, e: number, upTo: number): Judged {
 type LineVerdict = { word: string; at: number };
 let verdictsFor: unknown = null;
 let verdicts = new Map<number, LineVerdict | null>();
-const RANKS: [number, string][] = [[0.95, "Perfect"], [0.9, "Excellent"], [0.8, "Great"], [0.6, "Good"], [0.4, "OK"]];
+const RANKS: [number, string][] = [[0.95, "完美"], [0.9, "优秀"], [0.8, "很好"], [0.6, "不错"], [0.4, "还可以"]];
 function lineScore(f0: number, f1: number) {
   let ref = 0, both = 0, cr = 0;
   for (let f = Math.round(f0); f < f1; f++) {
@@ -91,11 +91,11 @@ function lineVerdict(now: number, perf: number): LineVerdict | null {
   return show;
 }
 
-/** A line just sung Excellent or Perfect (for the dancer to celebrate): when its word appeared, the same for the
+/** A line just sung 优秀 or 完美 (for the dancer to celebrate): when its word appeared, the same for the
  *  whole 1.6 s it shows, else null. */
 export function lineCheer(now: number, perf: number): number | null {
   const v = lineVerdict(now, perf);
-  return v && (v.word === "Excellent" || v.word === "Perfect") ? v.at : null;
+  return v && (v.word === "优秀" || v.word === "完美") ? v.at : null;
 }
 
 /** The verdict on the bar that ended most recently, if within the last `within` frames (for the dancer). */
@@ -324,7 +324,7 @@ export default function Lane() {
           g.restore();
         }
         g.fillStyle = "rgba(185,192,208,.55)"; g.font = `500 13px ${FONT}`; g.textAlign = "center";
-        const why = learning ? "" : live.blind ? "Blind take · notes hidden · press B to show them" : song.cache ? "Finding your place in the song…" : "";
+        const why = learning ? "" : live.blind ? "盲唱 · 音符已隐藏 · 按 B 显示" : song.cache ? "正在确认歌曲位置…" : "";
         if (why) g.fillText(why, nowX + (W - nowX) / 2, top + 26);
         g.textAlign = "left";
       }
@@ -393,7 +393,7 @@ export default function Lane() {
       if (dim > 0.01) {
         // what's going on, so a dimmed lane doesn't look broken
         g.globalAlpha = dim; g.fillStyle = "rgba(185,192,208,.75)"; g.font = `500 13px ${FONT}`; g.textAlign = "center";
-        g.fillText("Lining up with the song…", nowX + (W - nowX) / 2, top + 26);
+        g.fillText("正在对齐歌曲…", nowX + (W - nowX) / 2, top + 26);
         g.textAlign = "left"; g.globalAlpha = 1;
       }
 
@@ -545,7 +545,7 @@ export default function Lane() {
       if (show && !inBar && !recent && nextBar && nextBar[0] - now > 300) {
         const secs = Math.ceil((nextBar![0] - now) / 100);
         g.fillStyle = "rgba(230,233,240,.9)"; g.font = `600 15px ${FONT}`; g.textAlign = "center"; g.textBaseline = "middle";
-        g.fillText(`Singing starts in ${secs}s`, nowX + (W - nowX) * 0.35, top + (bottom - top) * 0.5);
+        g.fillText(`${secs} 秒后开始演唱`, nowX + (W - nowX) * 0.35, top + (bottom - top) * 0.5);
         g.textAlign = "left";
       }
 
@@ -557,7 +557,7 @@ export default function Lane() {
         g.save();
         g.globalAlpha = Math.min(k, age > 1.1 ? Math.max(0, 1 - (age - 1.1) / 0.5) : 1);
         g.translate(L + (nowX - L) * 0.55, top + (bottom - top) * 0.2); g.scale(pop, pop);
-        const hue = /Perfect|Excellent/.test(verdict.word) ? "#fde68a" : /Great|Good/.test(verdict.word) ? COLORS.good : "#c9cfdd";
+        const hue = /完美|优秀/.test(verdict.word) ? "#fde68a" : /很好|不错/.test(verdict.word) ? COLORS.good : "#c9cfdd";
         g.font = `800 ${Math.round(Math.max(18, Math.min(30, H * 0.07)))}px ${FONT}`; g.textAlign = "center"; g.textBaseline = "middle";
         g.lineJoin = "round"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.4)"; g.strokeText(verdict.word, 0, 1.5);
         g.fillStyle = hue; g.fillText(verdict.word, 0, 0);
@@ -649,7 +649,7 @@ export default function Lane() {
   }, []);
   return (
     <>
-      <canvas ref={ref} className="block h-full w-full" />
+      <canvas ref={ref} role="img" aria-label="实时音高轨迹：显示原唱音符和你的演唱音高，歌曲播放时会向左滚动" className="block h-full w-full" />
       {/* grain over the ribbon's gradients (dithering), shown with it while it moves */}
       <div ref={grainRef} aria-hidden className="pointer-events-none absolute inset-0 hidden opacity-0 transition-opacity duration-700"
            style={{ backgroundImage: typeof document === "undefined" ? undefined : grain() }} />

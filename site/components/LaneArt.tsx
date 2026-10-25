@@ -1,7 +1,6 @@
 /**
- * A still of OnKey's singing lane, drawn as SVG: the song's note bars scroll towards the "now" line, your pitch
- * trails behind it (green on the note, amber close, red off), and the line being sung sits underneath.
- * Illustration only; the real demo video replaces it on the home page.
+ * 用 SVG 绘制的音符轨道示意：音符向当前进度线移动，演唱音高以绿色、橙色或红色显示，歌词位于下方。
+ * 仅作示意，不代表应用中的实际界面。
  */
 const BARS: [number, number, number, "hit" | "miss" | "next"][] = [
   // x, width, row (semitones above the lowest row), state
@@ -26,7 +25,7 @@ function trailColour(i: number) {
 
 export function LaneArt() {
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label="Illustration of OnKey's singing lane: note bars, your pitch line and the lyric being sung">
+    <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label="音符轨道示意图，展示音符、演唱音高和歌词">
       <rect x="0" y="0" width={W} height={H} fill="var(--bg-raised)" />
       {Array.from({ length: ROWS }, (_, i) => (
         <rect key={i} x="0" y={top + i * rowH} width={W} height={rowH} fill={[1, 3, 6, 8, 10].includes(i % 12) ? "var(--panel)" : "transparent"} opacity="0.7" />
@@ -44,7 +43,7 @@ export function LaneArt() {
       <line x1={NOW} y1={top - 6} x2={NOW} y2={H - 30} stroke="var(--fg)" strokeOpacity="0.35" strokeWidth="1.5" />
       <circle cx={NOW - 2} cy={y(4.1)} r="7" fill="var(--good)" fillOpacity="0.55" stroke="var(--good)" strokeWidth="1.5" />
       <text x={W / 2} y={H - 10} textAnchor="middle" fontSize="15" fontFamily="var(--font-sans)" fill="var(--muted)">
-        <tspan fill="var(--fg)">Here's a line you</tspan> sing along to
+        <tspan fill="var(--fg)">跟着这一句</tspan> 一起唱
       </text>
     </svg>
   );

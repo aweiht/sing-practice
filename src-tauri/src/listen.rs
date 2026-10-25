@@ -337,13 +337,13 @@ impl Listener {
         }
         let s = |k, w: &str| Some((k, w.to_string()));
         if self.fails >= GIVE_UP_AFTER {
-            s("unnamed", "Couldn’t name this song")
+            s("unnamed", "无法识别这首歌")
         } else if self.shazam_resting {
-            s("no_shazam", "Shazam unavailable: only songs learned here are recognised")
+            s("no_shazam", "Shazam 暂不可用，目前只能识别已学习的歌曲")
         } else if self.song_ended_at.is_some_and(|e| self.t - e < 60.0) {
-            s("new_song", "New song… finding it")
+            s("new_song", "发现新歌…正在识别")
         } else {
-            s("finding", "Hearing music… finding the song")
+            s("finding", "正在聆听音乐…尝试识别歌曲")
         }
     }
 
@@ -1170,17 +1170,17 @@ static AWAY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(
 pub fn status_line() -> Option<(&'static str, String)> {
     if AWAY.load(std::sync::atomic::Ordering::Relaxed) {
         if let Some(b) = want_bundle() {
-            return Some(("elsewhere", format!("{} is playing, but not on this Mac", app_name(b))));
+            return Some(("elsewhere", format!("{} 正在播放，但不在这台 Mac 上", app_name(b))));
         }
     }
     let g = HOST.lock().unwrap();
     let st = g.as_ref()?.l.status()?;
     if std::env::var("ONKEY_NO_SHAZAM").is_ok() && st.0 != "unnamed" {
-        return Some(("no_shazam", "Shazam unavailable: only songs learned here are recognised".into()));
+        return Some(("no_shazam", "Shazam 暂不可用，目前只能识别已学习的歌曲".into()));
     }
     // switched off in Settings: a song not learned here is never named, and that's why
     if !crate::settings::shazam() && matches!(st.0, "unnamed" | "no_shazam") {
-        return Some(("shazam_off", "Not a song learned here: Shazam is off in Settings".into()));
+        return Some(("shazam_off", "这首歌尚未在随声练中学习，且设置中已关闭 Shazam".into()));
     }
     Some(st)
 }
@@ -1885,9 +1885,11 @@ mod tests {
         let mut l = Listener::new();
         play(&mut l, &mut Nameless { resting: None, asked: 0 }, &sound(15.0, &[], 0.3, 1));
         assert_eq!(kind(&l), Some("unnamed"));
+        assert_eq!(l.status().unwrap().1, "无法识别这首歌");
         let mut l = Listener::new();
         play(&mut l, &mut Nameless { resting: Some(30.0), asked: 0 }, &sound(5.0, &[], 0.3, 1));
         assert_eq!(kind(&l), Some("no_shazam"));
+        assert_eq!(l.status().unwrap().1, "Shazam 暂不可用，目前只能识别已学习的歌曲");
     }
 
     #[test]

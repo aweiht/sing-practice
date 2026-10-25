@@ -7,7 +7,7 @@ import { learnPct, learnStage, type LearnJob } from "@/lib/session";
 export default function LearnBar({ job, className = "", showPct = true }: { job: LearnJob; className?: string; showPct?: boolean }) {
   const pct = learnPct(job);
   return (
-    <div className={className} role="progressbar" aria-label={`Learning ${job.name}`} aria-valuemin={0} aria-valuemax={100}
+    <div className={className} role="progressbar" aria-label={`正在学习：${job.name}`} aria-valuemin={0} aria-valuemax={100}
          aria-valuenow={pct ?? undefined} aria-valuetext={pct == null ? learnStage(job) : `${learnStage(job)}, ${pct}%`}>
       <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
         <span className="truncate text-ink-300">{learnStage(job)}</span>

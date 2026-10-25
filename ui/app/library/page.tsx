@@ -12,8 +12,8 @@ import { firstPlayGoing, forgetSong, getLibrary, stopLearning, learnLabel, learn
 type Filter = "all" | "favorites" | "unscored" | "partial";
 const FILTER_KEY = "onkey.libraryFilter";
 type Sort = "recent" | "easy" | "hard" | "best" | "most" | "az";
-const SORTS: [Sort, string][] = [["recent", "Recent"], ["easy", "Easiest first"], ["hard", "Hardest first"],
-                                 ["best", "Best score"], ["most", "Most sung"], ["az", "A–Z"]];
+const SORTS: [Sort, string][] = [["recent", "最近活动"], ["easy", "由易到难"], ["hard", "由难到易"],
+                                 ["best", "最高分优先"], ["most", "演唱次数优先"], ["az", "按歌名排序"]];
 const SORT_KEY = "onkey.librarySort";
 const LEVELS_KEY = "onkey.libraryLevels";
 const byName = (a: LibrarySong, b: LibrarySong) => a.track.name.localeCompare(b.track.name);
@@ -134,11 +134,11 @@ export default function Library() {
       <main className="mx-auto max-w-6xl px-6 pb-16">
         <div className="mt-6 mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Library</h1>
-            <p className="mt-1 text-ink-300">Songs OnKey has learned. Pick one to sing it with every note shown ahead.</p>
+            <h1 className="text-3xl font-semibold tracking-tight">歌曲库</h1>
+            <p className="mt-1 text-ink-300">随声练已学习的歌曲。选择一首歌进行引导演唱，音符会提前显示。</p>
           </div>
           {all && all.length > 0 && (
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search songs"
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="搜索歌曲"
                    className="w-64 rounded-xl border border-white/8 bg-white/4 px-3.5 py-2 text-sm text-ink-100 placeholder:text-ink-400 outline-none transition focus:border-accent-400/50 focus:bg-white/6" />
           )}
         </div>
@@ -147,19 +147,18 @@ export default function Library() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map(i => <div key={i} className="glass h-36 rounded-3xl shimmer" />)}</div>
         ) : all.length === 0 ? (
           <div className={`glass rounded-3xl px-6 text-center ${startersHidden === false ? "pt-16 pb-6" : "py-20"}`}>
-            <h2 className="text-xl font-semibold">Nothing learned yet</h2>
-            <p className="mx-auto mt-1 max-w-md text-ink-300">Play a song through once while OnKey is open and it learns the melody.
-              A whole playlist works too: just let it play.</p>
-            <Link href="/" className="mt-5 inline-block rounded-xl bg-accent-500 px-4 py-2 font-medium text-white transition hover:bg-accent-400">Start</Link>
+            <h2 className="text-xl font-semibold">还没有学会歌曲</h2>
+            <p className="mx-auto mt-1 max-w-md text-ink-300">保持随声练开启并完整播放一首歌，应用就会学习它的旋律。也可以播放整个歌单。</p>
+            <Link href="/" className="mt-5 inline-block rounded-xl bg-accent-500 px-4 py-2 font-medium text-white transition hover:bg-accent-400">开始</Link>
             {startersHidden === false && <StarterSongs onHide={() => hideStarters(true)} className="mx-auto mt-12 max-w-4xl" />}
-            {startersHidden && <button onClick={() => hideStarters(false)} className="mt-4 block w-full text-xs text-ink-500 transition hover:text-ink-200">Show songs to try</button>}
+            {startersHidden && <button onClick={() => hideStarters(false)} className="mt-4 block w-full text-xs text-ink-500 transition hover:text-ink-200">显示推荐练习歌曲</button>}
           </div>
         ) : (<>
           <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-3">
-          <div role="radiogroup" aria-label="Show" className="inline-flex rounded-full border border-white/8 bg-white/4 p-1 text-sm">
-            {([["all", "All", main.length], ["favorites", "Favourites", favCount], ["unscored", "Not scored yet", unscoredCount],
-               ...(partlyCount ? [["partial", "Partly learned", partlyCount]] as const : [])] as const).map(([f, label, n]) => (
-              <button key={f} role="radio" aria-checked={filter === f} onClick={() => setFilter(f)} title={`${n} song${n === 1 ? "" : "s"}`}
+          <div role="radiogroup" aria-label="歌曲筛选" className="inline-flex rounded-full border border-white/8 bg-white/4 p-1 text-sm">
+            {([["all", "全部", main.length], ["favorites", "已收藏", favCount], ["unscored", "未评分", unscoredCount],
+               ...(partlyCount ? [["partial", "部分学完", partlyCount]] as const : [])] as const).map(([f, label, n]) => (
+              <button key={f} role="radio" aria-checked={filter === f} onClick={() => setFilter(f)} title={`${n} 首歌`}
                       className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent-400/60
                                   ${filter === f ? "bg-white/10 text-white" : "text-ink-300 hover:text-white"}`}>
                 {f === "favorites" && <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden
@@ -168,12 +167,12 @@ export default function Library() {
               </button>
             ))}
           </div>
-          <div role="group" aria-label="Difficulty" className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/4 p-1 text-sm">
-            <span className="px-2 text-xs text-ink-400">Difficulty</span>
+          <div role="group" aria-label="难度筛选" className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/4 p-1 text-sm">
+            <span className="px-2 text-xs text-ink-400">难度</span>
             {[1, 2, 3, 4, 5].map(n => (
               <button key={n} aria-pressed={levels.includes(n)} onClick={() => toggleLevel(n)}
-                      title={`${LEVELS[n - 1]}: ${perLevel[n - 1]} song${perLevel[n - 1] === 1 ? "" : "s"}`}
-                      aria-label={`${LEVELS[n - 1]} (${n} of 5)`}
+                      title={`${LEVELS[n - 1]}：${perLevel[n - 1]} 首歌`}
+                      aria-label={`${LEVELS[n - 1]}（共 5 级，第 ${n} 级）`}
                       className={`group flex h-8 items-center gap-0.5 rounded-full px-2.5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent-400/60
                                   ${levels.includes(n) ? "bg-white/10" : "hover:bg-white/5"}`}>
                 {[1, 2, 3, 4, 5].map(i => (
@@ -182,32 +181,32 @@ export default function Library() {
                 ))}
               </button>
             ))}
-            {levels.length > 0 && <button onClick={() => setLevels([])} className="px-2 text-xs text-ink-400 transition hover:text-white">Clear</button>}
+            {levels.length > 0 && <button onClick={() => setLevels([])} className="px-2 text-xs text-ink-400 transition hover:text-white">清除</button>}
           </div>
           <SortMenu sort={sort} onSort={setSort} />
-          <span className="tabular text-sm text-ink-500">{shown.length} song{shown.length === 1 ? "" : "s"}</span>
+          <span className="tabular text-sm text-ink-500">{shown.length} 首歌</span>
           </div>
           {filter === "partial" && partlyCount > 0 && (
             <div className="-mt-1 mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1 text-sm text-ink-400">
-              <p>OnKey heard only part of these. Play one through and it finishes learning it, then it moves to All.</p>
+              <p>随声练只听到了其中一部分。完整播放一次即可完成学习，之后会移到“全部”中。</p>
               <ClearPartly songs={shown.filter(x => !x.favorite)} hearted={shown.filter(x => x.favorite).length} narrowed={narrowed} onDelete={forget} />
             </div>
           )}
           {filter === "favorites" && favCount === 0 ? (
             <div className="glass rounded-3xl px-6 py-16 text-center">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden className="mx-auto mb-3 text-accent-400"><path d={HEART} /></svg>
-              <p className="text-ink-200">Tap ♥ on a song to keep it here.</p>
+              <p className="text-ink-200">点击歌曲旁的 ♥ 即可收藏。</p>
             </div>
           ) : shown.length === 0 ? (
             <p className="px-1 py-10 text-center text-ink-400">
-              {filter === "partial" && !narrowed ? "Nothing partly learned: every song is ready." : filter === "unscored" && !narrowed ? "Every song has a score. Nice." : q.trim() ? <>No songs match “{q.trim()}”.</> : "No songs match these filters."}
-              {narrowed && <button onClick={() => { setQ(""); setLevels([]); }} className="ml-2 text-accent-300 underline-offset-2 hover:underline">Clear</button>}
+              {filter === "partial" && !narrowed ? "没有只学了一部分的歌曲；所有歌曲都已准备就绪。" : filter === "unscored" && !narrowed ? "所有歌曲都已评分。" : q.trim() ? <>没有匹配“{q.trim()}”的歌曲。</> : "没有符合这些筛选条件的歌曲。"}
+              {narrowed && <button onClick={() => { setQ(""); setLevels([]); }} className="ml-2 text-accent-300 underline-offset-2 hover:underline">清除筛选</button>}
             </p>
           ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map(s => { const job = learnFor(s.track); return (
               <div key={s.track.id} role="button" tabIndex={0} aria-disabled={!!job || undefined}
-                   title={job ? "It can be sung once it’s learned" : undefined}
+                   title={job ? "学习完成后即可演唱" : undefined}
                    onClick={() => !job && !starting && sing(s)}
                    onKeyDown={e => { if (e.key === "Enter" && !job && !starting) sing(s); }}
                    className={`glass group relative overflow-hidden rounded-3xl p-4 text-left transition
@@ -215,10 +214,10 @@ export default function Library() {
                 <span className="absolute top-3 right-3 z-10 flex items-center" onClick={e => e.stopPropagation()}>
                   <Heart on={!!s.favorite} onToggle={on => heart(s, on)} subtle />
                   {!job && !learning.has(s.track.id) ? (
-                    <DeleteButton what="Delete this song (your takes stay in History; it goes to the Trash)" confirm="Delete this song?"
+                    <DeleteButton what="删除这首歌（练习记录会保留在“演唱记录”中；歌曲将移到废纸篓）" confirm="确定删除这首歌吗？"
                                   onDelete={() => forget(s.track.id)} />
                   ) : (
-                    <DeleteButton what="Stop learning this and delete it (not a song, say)" confirm="Stop learning and delete?"
+                    <DeleteButton what="停止学习并删除这首歌（例如确认它并非歌曲）" confirm="确定停止学习并删除吗？"
                                   onDelete={() => stop(s.track)} />
                   )}
                 </span>
@@ -230,28 +229,28 @@ export default function Library() {
                     <div className="mt-2 flex items-center gap-2 text-xs">
                       {job
                         ? <span className="flex items-center gap-1.5 rounded-full bg-accent-500/12 px-2 py-0.5 font-medium text-accent-300">
-                            <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />Learning</span>
+                            <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />正在学习</span>
                         : s.ready
-                        ? <span className="rounded-full bg-good/12 px-2 py-0.5 font-medium text-good">Ready</span>
-                        : <span className="rounded-full bg-close/12 px-2 py-0.5 font-medium text-close">{Math.round(100 * s.fraction)}% learned</span>}
+                        ? <span className="rounded-full bg-good/12 px-2 py-0.5 font-medium text-good">已准备就绪</span>
+                        : <span className="rounded-full bg-close/12 px-2 py-0.5 font-medium text-close">已学习 {Math.round(100 * s.fraction)}%</span>}
                       {s.difficulty != null && <Difficulty level={s.difficulty} />}
-                      {s.best != null && <span className="text-ink-400">best <span className="tabular font-semibold text-ink-100">{s.best}</span></span>}
+                      {s.best != null && <span className="text-ink-400">最高分 <span className="tabular font-semibold text-ink-100">{s.best}</span></span>}
                       {s.app && !job && (
                         <button onClick={e => { e.stopPropagation(); void openInApp(s.track.id); }} onKeyDown={e => e.stopPropagation()}
-                                title={`Open in ${s.app}`} className="truncate text-ink-500 underline-offset-2 transition hover:text-ink-200 hover:underline">
-                          in {s.app} ↗</button>
+                                title={`在 ${s.app} 中打开`} className="truncate text-ink-500 underline-offset-2 transition hover:text-ink-200 hover:underline">
+                          在 {s.app} 中打开 ↗</button>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 flex items-end justify-between gap-4 text-sm">
                   {job ? <LearnBar job={job} showPct={false} className="min-w-0 flex-1" />
-                       : <span className="text-ink-400">{s.ready ? "Notes ahead" : "Play it through to finish learning"}</span>}
+                       : <span className="text-ink-400">{s.ready ? "音符会提前显示" : "完整播放以完成学习"}</span>}
                   {job ? (
                     <span className="tabular shrink-0 font-medium text-ink-400">{learnLabel(job)}</span>
                   ) : (
                     <span className="flex shrink-0 items-center gap-1.5 font-medium text-accent-300 transition group-hover:text-white">
-                      {starting === s.track.id ? "Starting…" : "Sing"}
+                      {starting === s.track.id ? "正在启动…" : "演唱"}
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M8 5.5v13l11-6.5z" /></svg>
                     </span>
                   )}
@@ -263,27 +262,27 @@ export default function Library() {
           {/* songs to try, always reachable (collapsed to a link once hidden) */}
           <div className="mt-12">
             {startersHidden === false && <StarterSongs onHide={() => hideStarters(true)} className="mx-auto max-w-4xl" />}
-            {startersHidden && <button onClick={() => hideStarters(false)} className="block w-full text-center text-xs text-ink-500 transition hover:text-ink-200">Songs to try</button>}
+            {startersHidden && <button onClick={() => hideStarters(false)} className="block w-full text-center text-xs text-ink-500 transition hover:text-ink-200">推荐练习歌曲</button>}
           </div>
         </>)}
         <p className="mt-12 max-w-2xl text-xs leading-relaxed text-ink-500">
-          OnKey never saves the music: it keeps only the notes it learns and your own voice. Lyrics come from{" "}
+          随声练不会保存音乐，只保留学习到的音符和你的演唱录音。歌词来自{" "}
           <a href="https://lrclib.net" target="_blank" rel="noreferrer" className="underline decoration-ink-600 underline-offset-2 hover:text-ink-300">LRCLIB</a>.
-          OnKey isn’t affiliated with or endorsed by Spotify, Apple or Google; their names are trademarks of their owners.
+          随声练与 Spotify、Apple 或 Google 均无关联，也未获其认可；这些名称均为其各自所有者的商标。
         </p>
       </main>
     </div>
   );
 }
 
-const LEVELS = ["Easy", "Moderate", "Medium", "Hard", "Very hard"];
+const LEVELS = ["简单", "较简单", "中等", "困难", "很难"];
 
 /** How hard a song is to sing, as 1-5 dots (store::difficulty): mostly the range of its melody. */
 function Difficulty({ level }: { level: number }) {
   const word = LEVELS[level - 1] ?? "";
   return (
-    <span className="flex items-center gap-0.5" role="img" aria-label={`Difficulty ${level} of 5: ${word}`}
-          title={`Difficulty ${level} of 5: ${word}. Mostly how wide the melody's range is.`}>
+    <span className="flex items-center gap-0.5" role="img" aria-label={`难度 ${level}/5：${word}`}
+          title={`难度 ${level}/5：${word}。主要根据旋律音域跨度判断。`}>
       {[1, 2, 3, 4, 5].map(i => (
         <span key={i} className={`h-1.5 w-1.5 rounded-full ${i <= level ? "bg-ink-300" : "bg-ink-700"}`} />
       ))}
@@ -302,12 +301,12 @@ function SortMenu({ sort, onSort }: { sort: Sort; onSort: (s: Sort) => void }) {
     document.addEventListener("pointerdown", away); document.addEventListener("keydown", esc);
     return () => { document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", esc); };
   }, [open]);
-  const label = SORTS.find(([k]) => k === sort)?.[1] ?? "Recent";
+  const label = SORTS.find(([k]) => k === sort)?.[1] ?? "最近活动";
   return (
     <div ref={ref} className="relative ml-auto">
       <button onClick={() => setOpen(o => !o)} aria-haspopup="menu" aria-expanded={open}
               className="flex items-center gap-2 rounded-full border border-white/8 bg-white/4 py-2 pr-3 pl-4 text-sm text-ink-300 outline-none transition hover:text-white focus-visible:ring-2 focus-visible:ring-accent-400/60">
-        <span className="text-ink-400">Sort</span><span className="text-ink-100">{label}</span>
+        <span className="text-ink-400">排序</span><span className="text-ink-100">{label}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden
              className={`text-ink-400 transition ${open ? "rotate-180" : ""}`}><path d="M6 9l6 6 6-6" /></svg>
       </button>
@@ -331,22 +330,22 @@ function ClearPartly({ songs, hearted, narrowed, onDelete }: { songs: LibrarySon
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
   if (songs.length === 0) return null;
-  const n = songs.length, what = `${n} ${narrowed ? "shown " : ""}partly learned song${n === 1 ? "" : "s"}`;
+  const n = songs.length, what = `${narrowed ? "当前显示的 " : ""}${n} 首部分学完的歌曲`;
   if (!asking) {
     return (
       <button onClick={() => setAsking(true)} className="shrink-0 text-ink-400 underline-offset-2 transition hover:text-white hover:underline">
-        Delete all {n}
+        全部删除（{n}）
       </button>
     );
   }
   return (
-    <span className="flex shrink-0 items-center gap-3" role="group" aria-label="Delete all partly learned songs">
-      <span className="text-ink-200">Delete {what}? Takes stay in History{hearted ? `; ${hearted} hearted kept` : ""}.</span>
+    <span className="flex shrink-0 items-center gap-3" role="group" aria-label="删除所有部分学完的歌曲">
+      <span className="text-ink-200">删除{what}吗？练习记录会保留在“演唱记录”中{hearted ? `；已收藏的 ${hearted} 首歌曲会保留` : ""}。</span>
       <button disabled={busy} onClick={async () => { setBusy(true); for (const x of songs) await onDelete(x.track.id); setBusy(false); setAsking(false); }}
               className="rounded-lg bg-red-500/80 px-3 py-1 font-medium text-white transition hover:bg-red-500 disabled:opacity-60">
-        {busy ? "Deleting…" : "Delete all"}
+        {busy ? "正在删除…" : "全部删除"}
       </button>
-      <button disabled={busy} onClick={() => setAsking(false)} className="text-ink-400 transition hover:text-white">Cancel</button>
+      <button disabled={busy} onClick={() => setAsking(false)} className="text-ink-400 transition hover:text-white">取消</button>
     </span>
   );
 }

@@ -1,254 +1,146 @@
 import Link from "next/link";
-import { DATA_DIR, GITHUB_URL, WINDOWS_ISSUE_URL } from "@/lib/site";
+import { DATA_DIR, GITHUB_URL, ISSUES_URL } from "@/lib/site";
 
 export type QA = { id: string; q: string; a: React.ReactNode };
 
-/** The questions a first-time reader asks before downloading. Shown on the home page and at the top of the FAQ. */
+/** 首页与常见问题页共用的基础问答。 */
 export const FIRST_QUESTIONS: QA[] = [
   {
     id: "network",
-    q: "Does anything leave my Mac?",
+    q: "有哪些数据会离开我的 Mac？",
     a: (
       <>
-        <p>OnKey never saves or uploads the music it listens to. Your recordings and learned songs stay on your Mac. What does go out:</p>
+        <p>应用会在本机分析音乐，不会保存或上传音乐音频。联网请求包括：</p>
         <ul>
-          <li><strong>Shazam</strong> (Apple): a signature of up to 5 seconds of the music app's sound (not the audio, and never your mic) to name a new song when nothing else can say what's playing. That's YouTube, other apps, or Listen only. Spotify and Apple Music name their own songs, and songs you've sung before are recognised on your Mac. You can turn Shazam off in Settings.</li>
-          <li><strong>LRCLIB</strong>: the song's artist, title, album, and length, to fetch synced lyrics (unless Show lyrics is off).</li>
-          <li><strong>Apple</strong>: the artist and title to find album covers, and a recognised song's Apple Music id to get its length. The covers themselves load from Spotify's, Apple's, or YouTube's image servers.</li>
-          <li><strong>GitHub</strong>: a daily check for a new version, and its download. You can turn this off in Settings.</li>
+          <li><strong>LRCLIB</strong>：查询同步歌词时会发送歌曲名、歌手、专辑和时长；关闭歌词后不会查询。</li>
+          <li><strong>Apple</strong>：查询专辑封面和歌曲信息时会发送歌手、歌名或歌曲编号。</li>
+          <li><strong>Apple ShazamKit</strong>：项目没有配置自有 Shazam Developer ID，这项新歌识别能力尚未验证。若识别功能可用，会发送音乐指纹，不会发送麦克风音频。</li>
         </ul>
-        <p>There's no account, no analytics, and no server of mine. "Report a problem" only saves a file on your Mac, for you to attach to a GitHub issue if you want to. <Link href="/docs/privacy/">Privacy in full</Link>.</p>
+        <p>应用无需账号，也没有随声练自建服务端、网站统计或崩溃上报。网站文档本身不加载分析脚本。完整说明见<Link href="/docs/privacy/">隐私与法律</Link>。</p>
       </>
     ),
   },
   {
     id: "music",
-    q: "Does OnKey provide or download music?",
-    a: (
-      <p>
-        No. Your own music app plays the song (Spotify, Apple Music, or YouTube in a browser). OnKey listens to learn
-        the singer's notes and never saves the music.
-      </p>
-    ),
+    q: "随声练会提供或下载歌曲吗？",
+    a: <p>不会。歌曲由你正在使用的 Spotify、Apple Music 或浏览器中的 YouTube 播放。随声练只分析播放中的声音，不提供音乐下载或曲库。</p>,
   },
   {
     id: "kept",
-    q: "What does it keep on my Mac?",
-    a: (
-      <p>
-        For each song: the notes, a fingerprint and Shazam signature, and the lyrics with their timing. For each take:
-        a <strong>recording of your mic</strong> (about 0.5 MB a minute), your scores, and the lyrics you sang, so you
-        can play it back. It's all in <code>{DATA_DIR}</code> (except a take you share, which is saved as a video in Downloads), and deleting a take or song moves it to the Trash. It
-        never keeps the music, though a take sung over speakers will pick up some of it.
-      </p>
-    ),
+    q: "随声练会在 Mac 上保存什么？",
+    a: <p>应用会保存歌曲音符、歌词及其时间信息，以及每次练习的麦克风录音和评分，供你回听。数据位于 <code>{DATA_DIR}</code>。扬声器播放时，录音可能包含部分伴奏；应用不会保存独立的音乐音频。</p>,
   },
   {
     id: "permissions",
-    q: "Which permissions does it ask for?",
+    q: "应用需要哪些权限？",
     a: (
       <ul>
-        <li><strong>Microphone</strong>: to hear you sing.</li>
-        <li><strong>System audio recording</strong>: to hear the music app or browser that's playing. macOS calls it recording, but OnKey analyses the sound as it plays and doesn't save it.</li>
-        <li><strong>Control of Spotify and Music</strong> (asked in setup): to read what's playing and where, and to play, pause, and seek for "Sing it again". Choose "Listen only" in setup, or turn them off under "Let OnKey control" in Settings, and OnKey never sends them anything.</li>
-        <li><strong>Control of your browser</strong> (only if you turn YouTube on): the same for a YouTube tab.</li>
+        <li><strong>麦克风</strong>：采集你的演唱并生成练习录音。</li>
+        <li><strong>系统音频录制</strong>：分析正在播放的音乐。macOS 使用“录制”一词，但应用只在播放时分析，不会保存音乐音频。</li>
+        <li><strong>控制音乐应用或浏览器</strong>：如果启用对应控制功能，应用可读取播放位置并控制播放、暂停或跳转；也可选择只听声音，不控制播放器。</li>
       </ul>
     ),
   },
   {
     id: "macs",
-    q: "Which Macs does it run on?",
-    a: (
-      <p>
-        Apple Silicon (M1 or later) on macOS 14.2 or later. 14.2 is the first version that lets one app hear another
-        app's sound without extra drivers, and the models need Apple Silicon to keep up. 8 GB of memory is enough.
-        Intel Macs aren't supported.
-      </p>
-    ),
+    q: "支持哪些 Mac？",
+    a: <p>目标环境为搭载 Apple 芯片（M1 或更新机型）、运行 macOS 14.2 或更新版本的 Mac。Intel Mac 不在支持范围内。源代码构建与签名安装包的可用性不同；当前没有中文版发布安装包。</p>,
   },
   {
-    id: "windows",
-    q: "Why no Windows, Linux, or phone version?",
-    a: (
-      <p>
-        OnKey is built on macOS's per-app audio capture and Core ML. Windows can also hear one app's sound, so a port
-        is possible, but I haven't started one. If you'd use it, say so on the <a href={WINDOWS_ISSUE_URL} data-track="Windows issue">Windows
-        issue</a>. Phones don't let one app hear another, so a phone version would need a different approach.
-      </p>
-    ),
+    id: "platforms",
+    q: "为什么没有 Windows、Linux 或手机版本？",
+    a: <p>当前实现依赖 macOS 的单应用音频采集与 Core ML，其他平台尚未移植。如需反馈，请在<a href={ISSUES_URL}>随声练 GitHub Issues</a>提交建议。</p>,
   },
   {
     id: "browser",
-    q: "How does it compare? And why not in the browser?",
-    a: (
-      <>
-        <p>
-          Most singing apps need their own catalogue, backing tracks, or hand-made note charts. OnKey learns from the
-          music you already play, so you practise with the original artist. Songs with a clear lead vocal work best.
-        </p>
-        <p>
-          A web page can't hear the Spotify or Apple Music app, can't ask them what's playing, and can't use ShazamKit
-          or Core ML. So it's a Mac app.
-        </p>
-      </>
-    ),
+    q: "为什么不做成网页？",
+    a: <p>普通网页无法直接读取 Spotify 或 Apple Music 桌面应用的播放声音和位置，也无法调用 macOS 的 ShazamKit、Core ML 能力。因此当前产品是 Mac 应用，网站仅提供说明文档。</p>,
   },
   {
     id: "scoring",
-    q: "How is the score worked out?",
-    a: (
-      <p>
-        Every 10 ms that you and the singer both sing, your pitch is compared with theirs. Within half a semitone
-        gets full credit, fading to none at a semitone and a half. Octaves don't count against you, and your timing
-        gets 80 ms of slack. The score is your accuracy, scaled by how much of the singer's part you sang.
-        More in <Link href="/docs/scoring/">Scoring explained</Link>.
-      </p>
-    ),
+    q: "评分如何计算？",
+    a: <p>应用以短时间帧比较你的音高与歌手音高，在一定音高误差和时间偏差内给予分数，并按演唱覆盖比例调整总分。算法说明与限制见<Link href="/docs/scoring/">评分说明</Link>；网站中的上游测量数据尚未在中文歌曲上复测。</p>,
   },
   {
     id: "licence",
-    q: "What's the licence?",
-    a: (
-      <p>
-        MIT. It's free and the source is on GitHub. The models have their own licences, listed
-        in <Link href="/docs/credits/">Credits</Link>.
-      </p>
-    ),
+    q: "项目使用什么许可证？",
+    a: <p>随声练保留上游 MIT 许可证，改编自 Daniel Murrell 的 <a href="https://github.com/dsmurrell/onkey">dsmurrell/onkey（OnKey）</a>。模型和其他第三方组件各有许可证，详见<Link href="/docs/credits/">致谢与许可</Link>及仓库中的 <a href={`${GITHUB_URL}/blob/HEAD/THIRD_PARTY_NOTICES.md`}>第三方声明</a>。</p>,
   },
 ];
 
-/** Everyday questions, after the first ones, on the FAQ page. */
+/** 使用过程中的问答。 */
 export const MORE_QUESTIONS: QA[] = [
   {
     id: "first-play",
-    q: "Why does the first play not show any notes?",
-    a: (
-      <p>
-        OnKey learns a song after its first play ends, so there are no notes yet. You see the lyrics instead, a line
-        at a time (in time with the singer for the first minute and a half or so, except on 8 GB Macs). Sing along
-        anyway, as that take is still scored. From the second play, the notes scroll towards you with the words on
-        them.
-      </p>
-    ),
+    q: "为什么第一次播放时没有音符？",
+    a: <p>首次播放用于分析歌曲并学习音符。处理完成前会显示歌词而不是音符轨道；再次播放时才会显示学习到的音符。歌词对齐能力尚未针对中文歌曲验证。</p>,
   },
   {
     id: "learning",
-    q: "Why can't I sing a song yet? It says \"Learning…\"",
-    a: (
-      <p>
-        Learning happens after the song ends and took two to three minutes on my Mac. The "Sing it again" button shows the
-        progress and comes back when it's done. Other songs stay singable meanwhile. One song is learned at a time, so
-        songs played back to back say "Waiting to learn" until their turn. Learning also pauses while you sing a song
-        OnKey already knows.
-      </p>
-    ),
+    q: "学习歌曲要多久？",
+    a: <p>处理时间取决于歌曲长度、Mac 性能和当时的系统负载。应用会在歌曲播放结束后处理；如果一首歌曲正在学习，其他歌曲可能需要等待。</p>,
   },
   {
     id: "starters",
-    q: "What should I sing first?",
-    a: (
-      <p>
-        OnKey suggests songs it follows well. They show on the Sing page when nothing's playing, at the bottom of the
-        Library, and when you click the OnKey logo on the Sing page. Each has links to Spotify and Apple Music.
-      </p>
-    ),
+    q: "适合先练习哪些歌曲？",
+    a: <p>旋律清晰、主唱突出、伴奏和声较少的歌曲通常更容易分析。说唱、对白、合唱和复杂和声可能影响音符提取与评分。</p>,
   },
   {
     id: "busy",
-    q: "Will it slow my Mac down?",
-    a: (
-      <p>
-        Singing a learned song is light: 15 to 19% of one CPU core on my Mac. Learning is the heavy part, so OnKey
-        does it after the song ends, one song at a time, at low priority. While learning, it used about 1.7 GB of
-        memory (2.4 GB at most). On Macs with less than 32 GB, the models are unloaded after each song.
-      </p>
-    ),
+    q: "歌曲分析会占用多少 Mac 资源？",
+    a: <p>首次学习歌曲比回放已学习歌曲更耗资源，具体占用随设备、模型与歌曲变化。原版上游曾公开部分机器上的测量结果，但这些数据尚未在随声练版本和中文曲目上复测，不能视作当前设备的性能保证。</p>,
   },
   {
     id: "headphones",
-    q: "Do I need headphones?",
-    a: (
-      <p>
-        No, but they give the most reliable scores. On speakers, echo cancelling takes the song back out of your mic:
-        20 dB or more on a MacBook's speakers, 8 to 14 dB on external speakers. Loud music can still leak through.
-      </p>
-    ),
+    q: "练习时需要戴耳机吗？",
+    a: <p>不需要，但使用耳机通常更容易获得稳定结果。使用扬声器时，麦克风会同时收进你的声音和部分伴奏，回声消除无法在所有设备与音量下完全去除伴奏。</p>,
   },
   {
     id: "octave",
-    q: "Can I sing in a lower or higher octave?",
-    a: <p>Yes. An octave away from the singer counts as on the note.</p>,
+    q: "可以用比原唱高或低的八度唱吗？",
+    a: <p>可以。评分会把相差一个或多个八度的对应音高视作同一音，方便你按自己的音域演唱。</p>,
   },
   {
     id: "apps",
-    q: "Which music apps work?",
-    a: (
-      <p>
-        Spotify, Apple Music, and YouTube in Chrome, Brave, Edge, or Safari. By default, OnKey asks Spotify and Apple
-        Music what's playing, so positions are exact, and it can play and pause them from its own window. With
-        "Listen only" (every app off under "Let OnKey control" in Settings), it recognises songs by their sound. YouTube is followed by its sound unless you let OnKey
-        control your browser.
-      </p>
-    ),
+    q: "目前支持哪些音乐应用？",
+    a: <p>项目面向 Spotify、Apple Music，以及 Chrome、Brave、Edge 或 Safari 浏览器中的 YouTube。不同播放器控制能力与识别能力可能不同；是否可用以当前构建和系统权限为准。</p>,
   },
   {
     id: "shazam",
-    q: "Why use Shazam? Isn't that sending audio to Apple?",
-    a: (
-      <p>
-        ShazamKit sends a signature (a fingerprint worked out on your Mac), not the audio, and never your mic. OnKey
-        only asks Shazam when nothing else can name the song: YouTube, other apps, or Listen only. Songs you've sung
-        before are recognised on your Mac first. Turn off Settings &rarr; &ldquo;Use Shazam to name new songs&rdquo;
-        and nothing goes to Apple, but only songs you've already learned are recognised by sound.
-      </p>
-    ),
+    q: "Shazam 会把我的录音发送给 Apple 吗？",
+    a: <p>ShazamKit 通过音乐音频生成短指纹，识别请求不包含麦克风音频。随声练没有配置自有 Shazam Developer ID，因此这项能力尚未验证，可能无法使用。项目启用该能力后，隐私说明会列出请求内容。</p>,
+  },
+  {
+    id: "chinese-lyrics",
+    q: "中文歌词能准确对齐吗？",
+    a: <p>目前没有验证中文歌词对齐模型的准确度。对齐结果可能偏早、偏晚或不完整，请勿把它当作已支持的中文歌词准确率承诺。你可以在<a href={ISSUES_URL}>GitHub Issues</a>反馈问题。</p>,
   },
   {
     id: "lyrics-off",
-    q: "Can I turn the lyrics off?",
-    a: (
-      <p>
-        Yes, in Settings &rarr; &ldquo;Show lyrics&rdquo;. With it off, OnKey asks LRCLIB for nothing and shows no
-        words. Lyrics already on your Mac are hidden, not deleted. The notes and score work as usual, and songs learned
-        with lyrics off get their notes from the melody alone.
-      </p>
-    ),
+    q: "可以关闭歌词吗？",
+    a: <p>可以。应用设置中的歌词开关关闭后，不会查询新的歌词；已经保存在本机的歌词会被隐藏，是否删除取决于应用的数据管理操作。音符和评分仍可能使用歌曲音高信息。</p>,
   },
   {
     id: "odd-scores",
-    q: "Some songs score oddly. Why?",
-    a: <p>Rapped or spoken songs barely have a melody to score, and harmonies or choirs can confuse which voice is the tune. See <Link href="/docs/scoring/">the limits</Link>.</p>,
+    q: "为什么有些歌曲的评分不准确？",
+    a: <p>说唱或对白缺少稳定旋律，多人和声也可能让模型难以分辨主唱。使用扬声器时，伴奏还可能进入麦克风录音。更多限制见<Link href="/docs/scoring/">评分说明</Link>。</p>,
   },
   {
     id: "report",
-    q: "Something went wrong. How do I report it?",
-    a: (
-      <p>
-        Use <strong>Report a problem</strong> in Settings, the Help menu, or a take's page. It shows you what goes in
-        the zip (the last three days of OnKey's log and a summary of each play, with song names but no lyrics, audio,
-        or recordings) and saves it on your Mac. Nothing is uploaded. Then open an issue
-        on <a href={`${GITHUB_URL}/issues`}>GitHub</a> and attach the zip if you're happy to.
-        Have a look at <Link href="/docs/troubleshooting/">Troubleshooting</Link> first.
-      </p>
-    ),
+    q: "如何反馈问题？",
+    a: <p>请在<a href={ISSUES_URL}>随声练 GitHub Issues</a>提交问题，并说明系统版本、设备和复现步骤。Issues 内容可能公开；提交前请检查附件，不要上传录音、私密歌曲信息、密钥或其他个人资料。故障日志可能包含播放过的歌曲名称。</p>,
   },
   {
     id: "updates",
-    q: "How do I get updates?",
-    a: (
-      <p>
-        Automatically. Once a day OnKey checks GitHub for a new version and downloads it in the background (about
-        350 MB, as the models are inside the app). It installs when you choose Restart to update or when you quit,
-        never mid-song. You can turn the checks off in Settings.
-      </p>
-    ),
+    q: "如何获取新版？",
+    a: <p>随声练尚无发布安装包，应用自动更新已关闭。请从<a href={GITHUB_URL}>源码仓库</a>查看变更，并按<Link href="/docs/">构建指南</Link>自行构建；仓库没有虚构的 Release 下载链接。</p>,
   },
 ];
 
-/** A list of questions as open/close rows. */
+/** 首页与文档共用的原生展开问答。 */
 export function FaqList({ items }: { items: QA[] }) {
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3" role="group" aria-label="常见问题列表">
       {items.map(({ id, q, a }) => (
         <details key={id} id={`faq-${id}`} className="group scroll-mt-24 rounded-xl border border-line bg-panel [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 font-medium text-fg">

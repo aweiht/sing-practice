@@ -2,9 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Scrollytelling: short steps of text beside one diagram that stays in view and changes as each step reaches the
- * middle of the screen. On a phone the diagram sticks under the header and the text scrolls beneath it.
- * `diagram(step)` draws the diagram for a step; with motion off it is simply redrawn per step.
+ * 滚动说明：文字步骤经过视口中部时，旁边的图解会切换到对应状态。
  */
 export function Scrolly({ steps, diagram, label }: {
   steps: React.ReactNode[];
@@ -14,7 +12,7 @@ export function Scrolly({ steps, diagram, label }: {
   const [step, setStep] = useState(0);
   const refs = useRef<(HTMLDivElement | null)[]>([]);
   useEffect(() => {
-    // root: document so rootMargin applies to the viewport even inside the page's scroll container
+    // 以文档视口为观察根节点。
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) if (e.isIntersecting) setStep(Number((e.target as HTMLElement).dataset.step));
@@ -31,7 +29,7 @@ export function Scrolly({ steps, diagram, label }: {
         <figure aria-label={label} className="diagram overflow-hidden border-y border-line bg-bg-raised sm:rounded-2xl sm:border">
           {diagram(step)}
         </figure>
-        <p className="mt-2 text-center text-xs text-faint lg:hidden" aria-hidden="true">Step {step + 1} of {steps.length}</p>
+        <p className="mt-2 text-center text-xs text-faint lg:hidden" aria-hidden="true">第 {step + 1} 步，共 {steps.length} 步</p>
       </div>
       <div className="lg:order-1">
         {steps.map((s, i) => (

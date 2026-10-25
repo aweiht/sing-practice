@@ -236,7 +236,7 @@ function Take() {
   const stopAlong = () => { setAlong(false); voiceStop(); setPlaying(false); audio.current?.pause(); void stopPlayAlong(); };
 
   if (r === undefined) return <Shell><div className="glass mt-8 h-64 rounded-3xl shimmer" /></Shell>;
-  if (r === null) return <Shell><p className="mt-10 text-ink-300">This take couldn’t be found.</p></Shell>;
+  if (r === null) return <Shell><p className="mt-10 text-ink-300">找不到这条练习记录。</p></Shell>;
   const bias = Math.round(r.bias_cents);
   // s on the graph: you want to hear s, so the recording goes to s + latency (the graph draws your voice moved
   // that much earlier); the output's delay is taken care of by the playhead waiting at s (heardFrom)
@@ -276,31 +276,31 @@ function Take() {
           <p className="mt-3 max-w-2xl text-ink-200">{verdict(r)}</p>
           {job && <LearnBar job={job} className="mt-3 max-w-sm" />}
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <button onClick={() => playTrack(r.track.id, true, r.track.name)} disabled={!!job} title={job ? "It can be sung once it’s learned" : undefined}
+            <button onClick={() => playTrack(r.track.id, true, r.track.name)} disabled={!!job} title={job ? "学习完成后即可再次演唱" : undefined}
                     className="tabular rounded-xl bg-accent-500 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-accent-600/25 transition hover:bg-accent-400
                                disabled:cursor-default disabled:bg-white/6 disabled:text-ink-300 disabled:shadow-none">
-              {job ? learnLabel(job) : "Sing it again"}
+              {job ? learnLabel(job) : "再唱一次"}
             </button>
             {r.audio_kept !== false && (
             <button onClick={() => { if (along) stopAlong(); else if (playing) audio.current?.pause(); else { play(); } }}
                     className="rounded-xl bg-white/6 px-4 py-2 text-sm font-medium text-ink-100 transition hover:bg-white/10">
-              {playing && !along ? "Pause" : "Play your voice"}
+              {playing && !along ? "暂停" : "播放演唱录音"}
             </button>
             )}
             {r.song_offset != null && r.audio_kept !== false && (
               <button onClick={() => (along ? stopAlong() : startAlong(t))}
                       className={`rounded-xl px-4 py-2 text-sm font-medium transition ${along ? "bg-accent-500/20 text-accent-200 hover:bg-accent-500/30" : "bg-white/6 text-ink-100 hover:bg-white/10"}`}>
-                {along ? "Stop" : "Play with the song"}
+                {along ? "停止" : "跟歌曲一起播放"}
               </button>
             )}
             {/* back to the beginning, whichever way it's playing (or about to: from where it stopped) */}
             {r.audio_kept !== false && t > 1 && (
-              <button onClick={() => { seek(0); if (audio.current && !along) { route(); void audio.current.play(); } }} title="Play from the beginning"
+              <button onClick={() => { seek(0); if (audio.current && !along) { route(); void audio.current.play(); } }} title="从头播放"
                       className="inline-flex items-center gap-1.5 rounded-xl bg-white/6 px-3 py-2 text-sm font-medium text-ink-100 transition hover:bg-white/10">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" />
                 </svg>
-                From the start
+                从头开始
               </button>
             )}
             {r.song_offset != null && r.audio_kept !== false && (
@@ -309,7 +309,7 @@ function Take() {
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M12 3v12" /><path d="M7 8l5-5 5 5" /><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
                 </svg>
-                Share
+                分享片段
               </button>
             )}
           </div>
@@ -327,50 +327,50 @@ function Take() {
           )}
           {along && mode && !mode.control && !joined ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-accent-500/10 px-3 py-2 text-sm text-accent-100">
-              <span>Play {r.track.name} in {mode.app}{joinFrom < 5 ? " from the beginning" : ""}. OnKey will join in.</span>
-              {joinFrom >= 5 && <span className="text-accent-200/80">Go to {clock(joinFrom)} in {mode.app} for this part.</span>}
+              <span>请在 {mode.app} 中播放《{r.track.name}》{joinFrom < 5 ? "，从头开始播放" : ""}；随声练会自动跟上。</span>
+              {joinFrom >= 5 && <span className="text-accent-200/80">请在 {mode.app} 中跳到 {clock(joinFrom)}，播放这一段。</span>}
               {mode.key && (
                 <button onClick={async () => { await allowControl(mode.key!); const m = await alongMode(r.track.id); setMode(m); stopAlong(); }}
-                        className="text-xs text-accent-300 underline-offset-2 hover:underline">Let OnKey start it for you</button>
+                        className="text-xs text-accent-300 underline-offset-2 hover:underline">允许随声练为你启动歌曲</button>
               )}
             </div>
           ) : r.audio_kept === false ? (
-            <p className="mt-2 text-xs text-ink-400">Your recording of this take isn’t kept any more: OnKey keeps every take’s recording until they pass 2 GB together, then lets the oldest go (never your favourites’ or a song’s best take). The scores stay.</p>
+            <p className="mt-2 text-xs text-ink-400">这条记录的录音已不再保留：随声练会保留所有练习录音，直到总量超过 2 GB，之后删除最早的录音（不会删除已收藏歌曲的录音或该歌曲最高分记录）。评分仍会保留。</p>
           ) : (
-            <p className="mt-2 text-xs text-ink-400">OnKey keeps your voice, not the music. “Play with the song” {mode && !mode.control ? `plays your recording in step with ${r.track.name} when you play it in ${mode.app}` : `plays the track in ${sourceName(r.track.id)} alongside your recording`}.</p>
+            <p className="mt-2 text-xs text-ink-400">随声练保存你的演唱录音，不保存音乐。“跟歌曲一起播放”{mode && !mode.control ? `会在你通过 ${mode.app} 播放《${r.track.name}》时同步播放录音` : `会同时播放你在 ${sourceName(r.track.id)} 中的歌曲和演唱录音`}。</p>
           )}
         </div>
       </section>
 
       <section className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Tile label="Pitch accuracy" value={`${Math.round(100 * r.accuracy)}%`} sub={`${Math.round(100 * r.within50)}% within 50 cents`} />
-        <Tile label="Notes hit" value={r.notes_total ? `${r.notes_hit}/${r.notes_total}` : "–"} sub="held within a semitone" />
-        <Tile label="Sang along" value={`${Math.round(100 * r.coverage)}%`} sub="of the singer’s part" />
-        <Tile label="Tendency" value={Math.abs(bias) < 10 ? "Centred" : `${Math.abs(bias)}¢ ${bias > 0 ? "sharp" : "flat"}`}
-              sub={Math.abs(bias) < 10 ? "neither sharp nor flat" : bias > 0 ? "a little high on average" : "a little low on average"} />
-        <Tile label="Latency" value={`${r.latency_ms} ms`} sub="allowed for automatically" />
+        <Tile label="音准" value={`${Math.round(100 * r.accuracy)}%`} sub={`${Math.round(100 * r.within50)}% 在 50 音分以内`} />
+        <Tile label="命中音符" value={r.notes_total ? `${r.notes_hit}/${r.notes_total}` : "–"} sub="保持在目标音符半音范围内" />
+        <Tile label="跟唱覆盖率" value={`${Math.round(100 * r.coverage)}%`} sub="主唱部分" />
+        <Tile label="音准倾向" value={Math.abs(bias) < 10 ? "居中" : `${Math.abs(bias)} 音分${bias > 0 ? "偏高" : "偏低"}`}
+              sub={Math.abs(bias) < 10 ? "没有明显偏高或偏低" : bias > 0 ? "平均音高略高" : "平均音高略低"} />
+        <Tile label="延迟补偿" value={`${r.latency_ms} 毫秒`} sub="已自动补偿" />
       </section>
 
       <section className="glass mt-4 rounded-3xl p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
-          <h2 className="text-sm font-medium text-ink-200">You against the singer</h2>
+          <h2 className="text-sm font-medium text-ink-200">你与原唱的音高对比</h2>
           <div className="flex flex-wrap gap-4 text-xs text-ink-300">
-            <Key color="#6252e0" label="Singer’s notes" bar /><Key color={COLORS.good} label="You, within 50¢" />
-            <Key color={COLORS.close} label="Within 100¢" /><Key color={COLORS.off} label="Further off" />
+            <Key color="#6252e0" label="原唱音符" bar /><Key color={COLORS.good} label="你，偏差在 50 音分内" />
+            <Key color={COLORS.close} label="偏差在 100 音分内" /><Key color={COLORS.off} label="偏差更大" />
           </div>
         </div>
         <PitchView r={r} t={t} playing={playing} onSeek={seek} clock={heardPos} />
       </section>
       <div className="mt-3 flex items-center justify-end gap-4">
-        <DevCopy label="Copy take link" text={() => takeLink("take", id, { t, song: r.song_offset != null ? r.song_offset + t : null })} />
+        <DevCopy label="复制练习记录链接" text={() => takeLink("take", id, { t, song: r.song_offset != null ? r.song_offset + t : null })} />
         <button onClick={() => reportProblem(id)} className="text-xs text-ink-400 underline-offset-2 transition hover:text-white hover:underline">
-          Report a problem with this take
+          报告这次练习的问题
         </button>
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-medium text-ink-200">Line by line</h2>
-        {r.lines.length === 0 ? <p className="text-ink-400">{lyricsOff ? "Lyrics are off (Settings), so this take has no line-by-line report." : "No synced lyrics were found for this song."}</p> : (
+        <h2 className="mb-3 text-sm font-medium text-ink-200">逐句明细</h2>
+        {r.lines.length === 0 ? <p className="text-ink-400">{lyricsOff ? "歌词已关闭（可在“设置”中开启），因此这条记录没有逐句报告。" : "没有找到这首歌的同步歌词。"}</p> : (
           <div className="glass divide-y divide-white/5 overflow-hidden rounded-3xl">
             {r.lines.map((l, i) => <LineRow key={i} n={i + 1} l={l} active={t >= l.t0 && t < l.t1} onClick={() => seek(l.t0)} />)}
           </div>
@@ -382,8 +382,8 @@ function Take() {
 
 function ModeBadge({ blind, first }: { blind: boolean; first?: boolean }) {
   return blind
-    ? <span className="rounded-full bg-white/6 px-2 py-0.5 text-xs font-medium text-ink-200" title="Sung with no notes shown">Blind{first ? " · first time" : ""}</span>
-    : <span className="rounded-full bg-accent-500/12 px-2 py-0.5 text-xs font-medium text-accent-300" title="Sung with the notes ahead">Guided</span>;
+    ? <span className="rounded-full bg-white/6 px-2 py-0.5 text-xs font-medium text-ink-200" title="演唱时未显示音符">盲唱{first ? " · 首次" : ""}</span>
+    : <span className="rounded-full bg-accent-500/12 px-2 py-0.5 text-xs font-medium text-accent-300" title="演唱时提前显示了音符">引导演唱</span>;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -391,7 +391,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh bg-[radial-gradient(1200px_500px_at_50%_-10%,rgba(124,108,246,.10),transparent)]">
       <header data-tauri-drag-region className="app-header flex items-center gap-5 px-6 pt-4 pb-3"><Logo /><Nav /></header>
       <main className="mx-auto max-w-6xl px-6 pb-16">
-        <Link href="/history" className="text-sm text-ink-400 transition hover:text-white">← All takes</Link>
+        <Link href="/history" className="text-sm text-ink-400 transition hover:text-white">← 所有练习记录</Link>
         {children}
       </main>
     </div>
@@ -433,12 +433,12 @@ function Key({ color, label, bar }: { color: string; label: string; bar?: boolea
 function LineRow({ l, n, active, onClick }: { l: Line; n: number; active: boolean; onClick: () => void }) {
   const scored = l.accuracy != null && l.ref_frames > 20 && l.coverage > 0.2;
   const b = l.bias == null ? 0 : Math.round(l.bias);
-  const note = l.ref_frames <= 20 ? "no lead vocal" : l.coverage <= 0.2 ? "not sung" : Math.abs(b) >= 25 ? `${Math.abs(b)}¢ ${b > 0 ? "sharp" : "flat"}` : "";
+  const note = l.ref_frames <= 20 ? "没有主唱" : l.coverage <= 0.2 ? "未演唱" : Math.abs(b) >= 25 ? `${Math.abs(b)} 音分偏${b > 0 ? "高" : "低"}` : "";
   const col = !scored ? "" : l.accuracy! >= 0.85 ? COLORS.good : l.accuracy! >= 0.65 ? COLORS.close : COLORS.off;
   return (
-    <button onClick={onClick} className={`grid w-full grid-cols-[52px_1fr_minmax(80px,180px)_96px] items-center gap-4 px-5 py-3 text-left transition hover:bg-white/3 ${active ? "bg-accent-500/8" : ""}`}>
+    <button onClick={onClick} aria-label={`播放 ${clock(l.t0)} 处：${l.text || `第 ${n} 句`}`} className={`grid w-full grid-cols-[52px_1fr_minmax(80px,180px)_96px] items-center gap-4 px-5 py-3 text-left transition hover:bg-white/3 ${active ? "bg-accent-500/8" : ""}`}>
       <span className="tabular text-sm text-ink-400">{clock(l.t0)}</span>
-      <span className={`truncate ${active ? "text-white" : "text-ink-100"}`}>{l.text || <span className="text-ink-400">Line {n}</span>}</span>
+      <span className={`truncate ${active ? "text-white" : "text-ink-100"}`}>{l.text || <span className="text-ink-400">第 {n} 句</span>}</span>
       <span className="h-1.5 overflow-hidden rounded-full bg-white/6">
         {scored && <span className="block h-full rounded-full" style={{ width: `${100 * l.accuracy!}%`, background: col }} />}
       </span>
@@ -449,12 +449,12 @@ function LineRow({ l, n, active, onClick }: { l: Line; n: number; active: boolea
 
 function verdict(r: Result) {
   const parts: string[] = [];
-  if (r.coverage < 0.35) parts.push("You sat out a lot of this one, so there was less to score.");
-  parts.push(r.accuracy > 0.85 ? "Beautifully in tune." : r.accuracy > 0.7 ? "Mostly in tune, with a few wobbly patches." :
-             r.accuracy > 0.5 ? "Often near the note, drifting off it at times." : "The melody got away from you in places.");
-  if (Math.abs(r.bias_cents) >= 20) parts.push(`On average you sat ${Math.abs(Math.round(r.bias_cents))} cents ${r.bias_cents > 0 ? "sharp" : "flat"}.`);
+  if (r.coverage < 0.35) parts.push("这首歌有不少部分没有跟唱，因此可评分内容较少。");
+  parts.push(r.accuracy > 0.85 ? "音准非常出色。" : r.accuracy > 0.7 ? "大部分音准稳定，少数部分有些偏差。" :
+             r.accuracy > 0.5 ? "不少音符唱得接近，部分地方有些偏离。" : "有些地方没有跟上旋律。");
+  if (Math.abs(r.bias_cents) >= 20) parts.push(`平均音高${r.bias_cents > 0 ? "偏高" : "偏低"} ${Math.abs(Math.round(r.bias_cents))} 音分。`);
   const worst = r.lines.filter(l => l.accuracy != null && l.coverage > 0.3 && l.ref_frames > 30).sort((a, b) => a.accuracy! - b.accuracy!)[0];
-  if (worst && worst.accuracy! < 0.75) parts.push(worst.text ? `Worth another go: “${worst.text}”.` : `Worth another go: the line at ${clock(worst.t0)}.`);
+  if (worst && worst.accuracy! < 0.75) parts.push(worst.text ? `可以再练一次：“${worst.text}”。` : `可以再练一下 ${clock(worst.t0)} 处的这一句。`);
   return parts.join(" ");
 }
 
@@ -570,8 +570,8 @@ function PitchView({ r, t, playing, onSeek, clock }: { r: Result; t: number; pla
              }
              drag.current = null;
            }}>
-        <canvas ref={cv} className="absolute inset-0 h-full w-full" />
-        <canvas ref={ov} className="pointer-events-none absolute inset-0 h-full w-full" />
+        <canvas ref={cv} role="img" aria-label="音高对比图：横轴为歌曲时间，纵轴为音高；可点击或拖动查看不同位置" className="absolute inset-0 h-full w-full" />
+        <canvas ref={ov} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full" />
       </div>
       {/* clicking the strip plays from there (and shows that part of the chart) */}
       <Overview r={r} view0={view0} win={WIN} onPick={s => { setView0(Math.max(0, Math.min(dur - WIN, s - WIN / 2))); onSeek(s); }} />

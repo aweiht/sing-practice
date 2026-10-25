@@ -70,8 +70,8 @@ export default function History() {
       <header data-tauri-drag-region className="app-header flex items-center gap-5 px-6 pt-4 pb-3"><Logo /><Nav /></header>
       <main className="mx-auto max-w-6xl px-6 pb-16">
         <div className="mt-6 mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight">Your singing</h1>
-          <p className="mt-1 text-ink-300">Every song you sing becomes a take. Here’s how they’re going.</p>
+          <h1 className="text-3xl font-semibold tracking-tight">演唱记录</h1>
+          <p className="mt-1 text-ink-300">每首唱过的歌都会生成一条练习记录。这里可以查看练习情况。</p>
         </div>
 
         {pending.length > 0 && (
@@ -88,7 +88,7 @@ export default function History() {
                 </div>
                 {job && job.fraction != null
                   ? <LearnBar job={job} className="w-56 shrink-0" />
-                  : <div className="text-sm text-ink-300">{t.status === "learning" ? "Learning the song, then scoring your take…" : "Scoring…"}</div>}
+                  : <div className="text-sm text-ink-300">{t.status === "learning" ? "正在学习歌曲，之后会评估本次演唱…" : "正在评分…"}</div>}
               </div>
             ); })}
           </section>
@@ -96,22 +96,22 @@ export default function History() {
         {takes === null ? <Skeleton /> : real.length === 0 ? (pending.length ? null : <Empty />) : (
           <>
             <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <Stat label="Takes" value={real.length} />
-              <Stat label="Average, last 10" value={avg ?? "–"} sub={avg != null ? scoreWord(avg) : ""} />
-              <Stat label="Best" value={best ?? "–"} sub={best != null ? real.find(t => t.score === best)?.track.name : ""} />
-              <Stat label="Songs" value={songs.length} />
+              <Stat label="练习次数" value={real.length} />
+              <Stat label="最近 10 次平均分" value={avg ?? "–"} sub={avg != null ? scoreWord(avg) : ""} />
+              <Stat label="最高分" value={best ?? "–"} sub={best != null ? real.find(t => t.score === best)?.track.name : ""} />
+              <Stat label="歌曲数" value={songs.length} />
             </section>
 
             <section className="glass mt-4 rounded-3xl p-5">
               <div className="mb-3 flex items-baseline justify-between">
-                <h2 className="text-sm font-medium text-ink-200">Score per take</h2>
-                <span className="text-xs text-ink-400">oldest → newest</span>
+                <h2 className="text-sm font-medium text-ink-200">每次练习得分</h2>
+                <span className="text-xs text-ink-400">从早到晚</span>
               </div>
               <Trend takes={real.slice().reverse()} />
             </section>
 
             <section className="mt-8">
-              <h2 className="mb-3 text-sm font-medium text-ink-200">Songs</h2>
+              <h2 className="mb-3 text-sm font-medium text-ink-200">歌曲</h2>
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {songs.map(s => <SongCard key={s.track.id} s={s} onDelete={() => remove(s.takes.map(t => t.id))}
                                           fav={hearted(s.track)} onFav={on => heart(s.track, on)} />)}
@@ -119,14 +119,14 @@ export default function History() {
             </section>
 
             <section className="mt-8">
-              <h2 className="mb-3 text-sm font-medium text-ink-200">All takes</h2>
+              <h2 className="mb-3 text-sm font-medium text-ink-200">所有练习记录</h2>
               <div className="glass overflow-hidden rounded-3xl">
                 <table className="w-full text-sm">
                   <thead className="text-left text-xs text-ink-400">
                     <tr className="border-b border-white/6">
-                      <th className="px-5 py-3 font-medium">Song</th><th className="px-3 py-3 font-medium">When</th>
-                      <th className="px-3 py-3 text-right font-medium">Notes hit</th><th className="px-3 py-3 text-right font-medium">Pitch</th>
-                      <th className="px-3 py-3 text-right font-medium">Score</th><th className="w-12 pr-3" />
+                      <th className="px-5 py-3 font-medium">歌曲</th><th className="px-3 py-3 font-medium">时间</th>
+                      <th className="px-3 py-3 text-right font-medium">命中音符</th><th className="px-3 py-3 text-right font-medium">音准</th>
+                      <th className="px-3 py-3 text-right font-medium">得分</th><th className="w-12 pr-3" />
                     </tr>
                   </thead>
                   <tbody>
@@ -136,14 +136,14 @@ export default function History() {
                           <div className="font-medium">{t.track.name} <span className="tabular text-xs font-normal text-ink-400">#{playNo.get(t.id)}</span></div>
                           <div className="flex items-center gap-2 text-xs text-ink-400">{t.track.artist}
                             <span className={`rounded-full px-1.5 py-px text-[10px] font-medium ${t.mode === "learn" || t.blind ? "bg-white/6 text-ink-300" : "bg-accent-500/12 text-accent-300"}`}>
-                              {t.mode === "learn" || t.blind ? "Blind" : "Guided"}</span></div></Link></td>
+                              {t.mode === "learn" || t.blind ? "盲唱" : "引导演唱"}</span></div></Link></td>
                         <td className="px-3 py-3 text-ink-300">{when(t.recorded)}</td>
                         <td className="tabular px-3 py-3 text-right text-ink-200">{t.notes_total ? `${t.notes_hit}/${t.notes_total}` : "–"}</td>
                         <td className="tabular px-3 py-3 text-right text-ink-200">{Math.round(100 * t.accuracy)}%</td>
                         <td className="tabular px-3 py-3 text-right text-lg font-semibold">{t.score}</td>
                         <td className="relative pr-3 text-right">
                           <span className="inline-flex justify-end">
-                            <DeleteButton what="Delete this take (it goes to the Trash)" confirm="Delete this take?" onDelete={() => remove([t.id])} />
+                            <DeleteButton what="删除这条练习记录（会移到废纸篓）" confirm="确定删除这条练习记录吗？" onDelete={() => remove([t.id])} />
                           </span>
                         </td>
                       </tr>
@@ -191,27 +191,27 @@ function SongCard({ s, onDelete, fav, onFav }: { s: { track: TakeSummary["track"
         </div>
         <div className="flex items-start gap-1">
         <Heart on={fav} onToggle={onFav} subtle />
-        <DeleteButton what={`Delete all ${s.takes.length} take${s.takes.length > 1 ? "s" : ""} of this song (they go to the Trash)`}
-                      confirm={`Delete ${s.takes.length} take${s.takes.length > 1 ? "s" : ""}?`} onDelete={onDelete} />
+        <DeleteButton what={`删除该歌曲的 ${s.takes.length} 条练习记录（会移到废纸篓）`}
+                      confirm={`确定删除 ${s.takes.length} 条练习记录吗？`} onDelete={onDelete} />
         <div className="text-right">
           <div className="tabular text-2xl font-bold leading-none">{s.best}</div>
-          <div className="text-[10px] uppercase tracking-wider text-ink-400">best</div>
+          <div className="text-[10px] uppercase tracking-wider text-ink-400">最高分</div>
         </div>
         </div>
       </div>
       <div className="mt-3 flex items-end justify-between gap-3">
-        <svg width={W} height={H} aria-label={`Scores: ${pts.join(", ")}`}>
+        <svg width={W} height={H} aria-label={`得分记录：${pts.join("、")}`}>
           <path d={pts.map((v, i) => `${i ? "L" : "M"}${sx(i)},${sy(v)}`).join(" ")} fill="none" stroke={TREND} strokeWidth={2} strokeLinecap="round" />
           <circle cx={sx(pts.length - 1)} cy={sy(pts[pts.length - 1])} r={3.5} fill={TREND} />
         </svg>
-        <div className="text-right text-xs text-ink-400 transition group-hover:text-ink-100">{s.takes.length} play{s.takes.length > 1 ? "s" : ""} · last {s.last.score} · see all</div>
+        <div className="text-right text-xs text-ink-400 transition group-hover:text-ink-100">{s.takes.length} 次 · 最近得分 {s.last.score} · 查看全部</div>
       </div>
       {job && <LearnBar job={job} showPct={false} className="mt-3" />}
       <button onClick={e => { e.stopPropagation(); if (!job) void playTrack(s.track.id, true, s.track.name); }} disabled={!!job}
-              title={job ? "It can be sung once it’s learned" : undefined}
+              title={job ? "学习完成后即可再次演唱" : undefined}
               className="tabular mt-3 w-full rounded-xl bg-white/5 py-2 text-sm font-medium text-ink-100 transition hover:bg-accent-500/20 hover:text-white
                          disabled:cursor-default disabled:text-ink-400 disabled:hover:bg-white/5 disabled:hover:text-ink-400">
-        {job ? learnLabel(job) : "Sing it again"}
+        {job ? learnLabel(job) : "再唱一次"}
       </button>
     </div>
   );
@@ -221,9 +221,9 @@ function Empty() {
   return (
     <div className="glass grid place-items-center rounded-3xl px-6 py-20 text-center">
       <div>
-        <h2 className="text-xl font-semibold">No takes yet</h2>
-        <p className="mt-1 text-ink-300">Sing along to a song for at least 20 seconds and it’ll show up here.</p>
-        <Link href="/" className="mt-5 inline-block rounded-xl bg-accent-500 px-4 py-2 font-medium text-white transition hover:bg-accent-400">Start singing</Link>
+        <h2 className="text-xl font-semibold">还没有练习记录</h2>
+        <p className="mt-1 text-ink-300">跟唱一首歌至少 20 秒，练习记录就会显示在这里。</p>
+        <Link href="/" className="mt-5 inline-block rounded-xl bg-accent-500 px-4 py-2 font-medium text-white transition hover:bg-accent-400">开始演唱</Link>
       </div>
     </div>
   );

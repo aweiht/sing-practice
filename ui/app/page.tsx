@@ -83,7 +83,7 @@ export default function Sing() {
                   <span className="truncate text-[15px] font-semibold tracking-tight">{song.track.name}</span>
                   <Heart on={favOn} onToggle={toggleFav} size={14} className="-my-1.5 h-6 w-6" />
                   {song.track.id.startsWith("youtube:") && <RenameVideo id={song.track.id} artist={song.track.artist} name={song.track.name} />}
-                  <DevCopy label="Copy link" text={async () => {
+                  <DevCopy label="复制链接" text={async () => {
                     const n = await playerNow().catch(() => null);
                     return takeLink("live", song.version, { song: n?.position, track: song.track.id, mode: song.mode, at: logTime() });
                   }} />
@@ -103,7 +103,7 @@ export default function Sing() {
         <div className="flex items-center justify-end gap-4">
           {song && <ScoreAndHint />}
           {app && (
-            <button onClick={() => toggleMini(true)} title="Mini mode: a small lyrics bar that stays on top of other apps (M)"
+            <button onClick={() => toggleMini(true)} title="迷你模式：置顶显示歌词栏（M）"
                     className="grid h-9 w-9 place-items-center rounded-full text-ink-300 transition hover:bg-white/8 hover:text-white">
               <Icon d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM12.5 11.5h5.5v4.5h-5.5z" size={18} />
             </button>
@@ -122,7 +122,7 @@ export default function Sing() {
         {!setup && song?.mode === "sing" && !ended && drowned && <SpeakerHint key={song.version} id={song.track.id} />}
         {!setup && notSong && <NotASong key={notSong.track_id} id={notSong.track_id} name={notSong.name} />}
         {ended && !finding && <Ended takes={takes} />}
-        {(problem === "permission" || status.audio === "denied") && !setup && <NeedsPermission app={status.player?.app ?? "your music app"} />}
+        {(problem === "permission" || status.audio === "denied" || status.audio === "restricted") && !setup && <NeedsPermission app={status.player?.app ?? "音乐应用"} />}
       </main>
       {setup && <Setup onClose={() => setSetup(false)} />}
 
@@ -155,11 +155,11 @@ function Learning() {
   return (
     <div className="pointer-events-none absolute inset-y-0 right-0" style={{ left: `calc(${KEYS_W}px + (100% - ${KEYS_W}px) * ${NOW_AT})` }}>
       <div className={`frost absolute top-1/2 left-1/2 w-[min(calc(100%-40px),300px)] rounded-[22px] px-[18px] pt-4 pb-3.5 text-center -translate-x-1/2 -translate-y-1/2`}>
-        <div className="mx-auto mb-2.5 flex w-fit items-center gap-2 rounded-full bg-accent-500/14 px-3 py-1 text-xs font-medium text-accent-300">{dot}Learning this song</div>
-        <h2 className="text-base font-semibold tracking-tight">Your blind take</h2>
-        <p className="mt-1 text-[12.5px] leading-snug text-ink-200/85">Sing along, no hints. Next time you’ll see every note coming.</p>
+        <div className="mx-auto mb-2.5 flex w-fit items-center gap-2 rounded-full bg-accent-500/14 px-3 py-1 text-xs font-medium text-accent-300">{dot}正在学习这首歌</div>
+        <h2 className="text-base font-semibold tracking-tight">本次盲唱</h2>
+        <p className="mt-1 text-[12.5px] leading-snug text-ink-200/85">跟着歌曲演唱，不显示提示。下次练习时会提前显示每个音符。</p>
         {bar("mt-3 h-1")}
-        <div className="mt-2 text-[11.5px] text-ink-300"><span className="tabular">{clock(t)}{d > 0 && ` / ${clock(d)}`}</span> · score after the song</div>
+        <div className="mt-2 text-[11.5px] text-ink-300"><span className="tabular">{clock(t)}{d > 0 && ` / ${clock(d)}`}</span> · 歌曲结束后评分</div>
       </div>
     </div>
   );
@@ -189,8 +189,8 @@ function LearningLine({ jobs, className = "" }: { jobs: LearnJob[]; className?: 
          title={after.length > 1 ? after.map(a => a.name).join(", ") : undefined}>
       <div className="flex items-baseline gap-1.5">
         {pct == null
-          ? <span className="truncate text-ink-300">Waiting to learn <span className="text-ink-100">{j.name}</span></span>
-          : <span className="truncate text-ink-300">Learning <span className="text-ink-100">{j.name}</span>: {learnStage(j).toLowerCase()}</span>}
+          ? <span className="truncate text-ink-300">等待学习：<span className="text-ink-100">{j.name}</span></span>
+          : <span className="truncate text-ink-300">正在学习：<span className="text-ink-100">{j.name}</span> · {learnStage(j)}</span>}
         <span className="tabular ml-auto shrink-0 text-ink-400">{after.length > 1 ? `+${after.length - 1}` : ""}{after.length > 1 && pct != null ? " · " : ""}{pct != null ? `${pct}%` : ""}</span>
       </div>
       <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-white/8">
@@ -202,14 +202,14 @@ function LearningLine({ jobs, className = "" }: { jobs: LearnJob[]; className?: 
 
 /** What the status line means, said under it while waiting. */
 const LINE_SUB: Record<Line["kind"], string> = {
-  finding: "OnKey is naming the song from its sound. It takes a few seconds, and the take starts from the song’s beginning.",
-  new_song: "OnKey is naming the next song. Its take starts from the song’s beginning.",
-  unnamed: "It isn’t one OnKey or Shazam knows. OnKey asks again when the sound changes.",
-  no_shazam: "Shazam can’t be reached just now, so only songs learned on this Mac are recognised. OnKey keeps trying.",
-  shazam_off: "Shazam is off (Settings), so from its sound alone OnKey recognises only songs already learned on this Mac. Turn Shazam on to name new ones.",
-  podcast: "Play a song and OnKey follows along.",
+  finding: "正在根据声音识别歌曲，需要几秒钟；本次记录会从歌曲开头开始。",
+  new_song: "正在识别下一首歌；本次记录会从歌曲开头开始。",
+  unnamed: "随声练和 Shazam 都无法识别这首歌。声音变化后，随声练会再次尝试。",
+  no_shazam: "暂时无法连接 Shazam，目前只能识别这台 Mac 上已学习的歌曲。随声练会继续尝试。",
+  shazam_off: "Shazam 已关闭（可在“设置”中开启），因此只能通过声音识别这台 Mac 上已学习的歌曲。开启 Shazam 后即可识别新歌。",
+  podcast: "播放歌曲，随声练就会跟随演唱。",
   learning: "",
-  elsewhere: "OnKey hears what plays on this Mac. If it's playing on another device (your phone, a speaker), switch it to this Mac in the app's device menu.",
+  elsewhere: "随声练会听取这台 Mac 上播放的声音。如果歌曲正在手机或音箱等其他设备播放，请在音乐 App 的设备菜单中切换到这台 Mac。",
 };
 
 /** First run (nothing learned yet) and still no song after this long: suggest songs to try, whatever the line says. */
@@ -237,17 +237,17 @@ function Waiting({ connected, line, player, youtube, listening, onSetup }: { con
   }, [start]);
   const idle = !said && player?.state !== "playing" && !start;
   const starters = connected && startersHidden === false && (idle || (firstRun && waited && !start));
-  const title = !connected ? "Starting OnKey…" : start ? (start.name ? `Starting ${start.name}…` : "Starting the song…") : said ? (said.kind === "finding" || said.kind === "new_song" ? "Getting ready…" : said.kind === "podcast" ? "Not a song" : said.kind === "elsewhere" ? said.text : "Still listening") : player?.state === "playing" ? "Getting ready…"
-    : youtube ? "Play a song in Spotify, Apple Music or YouTube" : "Play a song in Spotify or Apple Music";
+  const title = !connected ? "正在启动随声练…" : start ? (start.name ? `正在启动：${start.name}…` : "正在启动歌曲…") : said ? (said.kind === "finding" || said.kind === "new_song" ? "正在准备…" : said.kind === "podcast" ? "这不是歌曲" : said.kind === "elsewhere" ? said.text : "仍在聆听") : player?.state === "playing" ? "正在准备…"
+    : youtube ? "在 Spotify、Apple Music 或 YouTube 中播放歌曲" : "在 Spotify 或 Apple Music 中播放歌曲";
   const sub = !connected
-    ? "Connecting to the engine on this Mac."
+    ? "正在连接这台 Mac 上的音频引擎。"
     : start
-      ? "The lane appears as soon as it plays."
+      ? "歌曲开始播放后，音高轨迹就会显示。"
     : said
       ? LINE_SUB[said.kind]
       : player?.state === "playing"
-        ? `Listening to ${player.name} — the lane appears in a moment.`
-        : "OnKey follows along automatically. Sing whatever comes on — every song becomes a take you can review.";
+        ? `正在聆听 ${player.name}，音高轨迹马上显示。`
+        : "随声练会自动跟随播放内容。跟着歌曲演唱，每次练习都会生成可回看的记录。";
   return (
     <div className="absolute inset-0 grid place-items-center overflow-y-auto p-6">
       <div className="flex w-full max-w-2xl flex-col items-center">
@@ -260,27 +260,27 @@ function Waiting({ connected, line, player, youtube, listening, onSetup }: { con
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-2 text-ink-300">{sub}</p>
         <div className="mt-6 flex justify-center gap-4 text-xs text-ink-400">
-          <span><Kbd>Space</Kbd> play / pause</span><span><Kbd>R</Kbd> start over</span><span><Kbd>←</Kbd><Kbd>→</Kbd> skip</span><span><Kbd>F</Kbd> favourite</span>
+          <span><Kbd>空格</Kbd>播放/暂停</span><span><Kbd>R</Kbd>重新开始</span><span><Kbd>←</Kbd><Kbd>→</Kbd>切歌</span><span><Kbd>F</Kbd>收藏</span>
         </div>
         {/* the YouTube switch; when listening, only while it's off (songs in a browser aren't picked up until it's on) */}
         {connected && (!listening || !youtube) && (
           <div className="mx-auto mt-8 max-w-sm rounded-xl border border-white/6 px-4 py-3 text-left text-xs text-ink-400">
             <div className="flex items-center justify-between gap-3">
-              <span className="font-medium text-ink-200">YouTube and YouTube Music <span className="ml-1 rounded-full bg-white/6 px-1.5 py-px text-[10px] font-normal text-ink-300">Experimental</span></span>
+              <span className="font-medium text-ink-200">YouTube 和 YouTube Music <span className="ml-1 rounded-full bg-white/6 px-1.5 py-px text-[10px] font-normal text-ink-300">实验功能</span></span>
               <button disabled={busy} onClick={async () => { setBusy(true); await setYouTube(!youtube); setBusy(false); }}
                       className="shrink-0 rounded-lg bg-white/6 px-2.5 py-1 text-ink-100 transition hover:bg-white/10 disabled:opacity-50">
-                {youtube ? "Turn off" : "Turn on"}</button>
+                {youtube ? "关闭" : "开启"}</button>
             </div>
             <p className="mt-1.5">{youtube
-              ? "On. macOS asks once to let OnKey control your browser, so it can read where the video is."
-              : "Off, so songs playing in your browser aren’t picked up. Turn it on to sing along in Chrome, Safari, Brave or Edge: macOS asks once to let OnKey control the browser."}</p>
+              ? "已开启。macOS 会询问一次是否允许随声练控制浏览器，以读取视频播放进度。"
+              : "尚未开启，因此无法跟随浏览器中的歌曲。开启后即可在 Chrome、Safari、Brave 或 Edge 中跟唱；macOS 会询问是否允许随声练控制浏览器。"}</p>
           </div>
         )}
-        <button onClick={onSetup} className="mt-5 text-xs text-ink-500 transition hover:text-ink-200">Setup: permissions and mic check</button>
+        <button onClick={onSetup} className="mt-5 text-xs text-ink-500 transition hover:text-ink-200">设置权限并测试麦克风</button>
       </div>
       {starters && <StarterSongs onHide={() => hideStarters(true)} className="mt-8 animate-rise" />}
       {connected && idle && startersHidden && (
-        <button onClick={() => hideStarters(false)} className="mt-6 text-xs text-ink-500 transition hover:text-ink-200">Songs to try</button>
+        <button onClick={() => hideStarters(false)} className="mt-6 text-xs text-ink-500 transition hover:text-ink-200">推荐练习歌曲</button>
       )}
       </div>
     </div>
@@ -303,25 +303,25 @@ function RenameVideo({ id, artist, name }: { id: string; artist: string; name: s
   }
   return (
     <span className="relative">
-      <button onClick={() => setOpen(o => !o)} title="Wrong song name? Fix the artist and title (used to find the lyrics)"
+      <button onClick={() => setOpen(o => !o)} title="歌曲名称有误？修改歌手和标题后，随声练会据此查找歌词。"
               className="grid h-6 w-6 place-items-center rounded-full text-ink-500 transition hover:bg-white/8 hover:text-ink-100">
         <Icon d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-4-4L4 16v4zM13.5 6.5l4 4" size={13} />
       </button>
       {open && (
         <form onSubmit={save} onKeyDown={e => { if (e.key === "Escape") setOpen(false); }}
               className="glass absolute left-1/2 top-8 z-30 w-72 -translate-x-1/2 animate-rise rounded-2xl p-4 text-left shadow-2xl shadow-black/50">
-          <div className="text-xs font-medium text-ink-200">Fix the song name</div>
-          <p className="mt-0.5 text-xs text-ink-400">Read from the YouTube video. OnKey finds the lyrics by this name.</p>
-          <label className="mt-3 block text-[11px] text-ink-400" htmlFor="rename-artist">Artist</label>
+          <div className="text-xs font-medium text-ink-200">修改歌曲信息</div>
+          <p className="mt-0.5 text-xs text-ink-400">信息读取自 YouTube 视频。随声练会用此名称查找歌词。</p>
+          <label className="mt-3 block text-[11px] text-ink-400" htmlFor="rename-artist">歌手</label>
           <input id="rename-artist" value={a} onChange={e => setA(e.target.value)} autoFocus
                  className="mt-1 w-full rounded-lg border border-white/8 bg-white/4 px-2.5 py-1.5 text-sm text-ink-100 outline-none focus:border-accent-400" />
-          <label className="mt-2 block text-[11px] text-ink-400" htmlFor="rename-title">Title</label>
+          <label className="mt-2 block text-[11px] text-ink-400" htmlFor="rename-title">歌曲名称</label>
           <input id="rename-title" value={n} onChange={e => setN(e.target.value)}
                  className="mt-1 w-full rounded-lg border border-white/8 bg-white/4 px-2.5 py-1.5 text-sm text-ink-100 outline-none focus:border-accent-400" />
           <div className="mt-3 flex justify-end gap-2">
-            <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-3 py-1.5 text-xs text-ink-300 transition hover:text-ink-100">Cancel</button>
+            <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-3 py-1.5 text-xs text-ink-300 transition hover:text-ink-100">取消</button>
             <button type="submit" disabled={busy || !n.trim()}
-                    className="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-accent-400 disabled:opacity-50">Save</button>
+                    className="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-accent-400 disabled:opacity-50">保存</button>
           </div>
         </form>
       )}
@@ -341,62 +341,54 @@ function Notices({ status, song }: { status: Status; song: SongState | null }) {
   const learning = !song || song.mode === "learn";
   const list = [
     (status.mic === "denied" || status.mic === "restricted") && (
-      <Notice key="mic" title="OnKey can’t hear your microphone"
-              action={status.mic === "denied" ? { label: "Open System Settings", run: () => setupOpenSettings("mic") } : undefined}>
+      <Notice key="mic" title="随声练无法使用麦克风"
+              action={status.mic === "denied" ? { label: "打开系统设置", run: () => setupOpenSettings("mic") } : undefined}>
         {status.mic === "denied"
-          ? <>Your singing isn’t heard or scored until it can. In <b>System Settings → Privacy &amp; Security → Microphone</b>, turn on OnKey.</>
-          : <>Your Mac’s settings don’t let OnKey use the microphone. Ask whoever manages this Mac.</>}
+          ? <>授权麦克风后才能听到你的演唱并评分。请前往<b>系统设置 → 隐私与安全性 → 麦克风</b>，允许随声练访问麦克风。</>
+          : <>这台 Mac 的设置禁止随声练使用麦克风，请联系设备管理员。</>}
       </Notice>
     ),
     status.mic === "granted" && status.mic_device === null && (
-      <Notice key="mic" title="OnKey can’t hear your microphone">
-        No microphone is connected, so your singing isn’t heard or scored. Connect one, or choose one in{" "}
-        <b>System Settings → Sound → Input</b>.
+      <Notice key="mic" title="随声练无法听到麦克风">
+        当前没有连接麦克风，因此无法听到你的演唱并评分。请连接麦克风，或前往<b>系统设置 → 声音 → 输入</b>选择设备。
       </Notice>
     ),
     status.music_quiet && (
-      <Notice key="music-quiet" title={`${status.music_quiet.app}’s volume is very low`}>
-        OnKey can’t hear the song well{status.music_quiet.volume != null ? ` (${status.music_quiet.app} is at ${status.music_quiet.volume}%)` : ""}, so your
-        singing isn’t scored. Turn {status.music_quiet.app} up and use your Mac’s volume instead.
+      <Notice key="music-quiet" title={`${status.music_quiet.app} 的音量过低`}>
+        随声练无法清楚听到歌曲{status.music_quiet.volume != null ? `（${status.music_quiet.app} 音量为 ${status.music_quiet.volume}%）` : ""}，因此无法评估你的演唱。请调高 {status.music_quiet.app} 的音量，并通过 Mac 调节整体音量。
       </Notice>
     ),
     status.automation_denied && (
-      <Notice key="automation" title={`OnKey isn’t allowed to control ${status.automation_denied}`}
-              action={{ label: "Open System Settings", run: () => setupOpenSettings("automation") }}>
-        {status.listening ? "OnKey follows it by listening instead, and can’t start, pause or skip songs there." : "So it can’t tell what’s playing there."} In{" "}
-        <b>System Settings → Privacy &amp; Security → Automation → OnKey</b>, turn on {status.automation_denied}{status.listening ? <>, or turn it off in OnKey’s Settings</> : null}.
+      <Notice key="automation" title={`随声练未获准控制 ${status.automation_denied}`}
+              action={{ label: "打开系统设置", run: () => setupOpenSettings("automation") }}>
+        {status.listening ? "随声练会改为通过声音跟随歌曲，但无法在该应用中启动、暂停或切歌。" : "因此无法读取该应用的播放信息。"}请前往
+        <b>系统设置 → 隐私与安全性 → 自动化 → 随声练</b>，允许控制 {status.automation_denied}{status.listening ? <>；也可以在随声练的“设置”中关闭该应用控制。</> : null}。
       </Notice>
     ),
     !status.automation_denied && status.not_answering && (
-      <Notice key="not-answering" title={`${status.not_answering} isn’t answering OnKey`}
-              action={{ label: "Open System Settings", run: () => setupOpenSettings("automation") }}>
-        macOS may be asking whether OnKey can control {status.not_answering}, in a window hidden behind others: look for
-        it and choose <b>Allow</b>. Or turn {status.not_answering} on in <b>System Settings → Privacy &amp; Security →
-        Automation → OnKey</b>. OnKey tries again in a minute.
+      <Notice key="not-answering" title={`${status.not_answering} 尚未响应随声练`}
+              action={{ label: "打开系统设置", run: () => setupOpenSettings("automation") }}>
+        macOS 可能正在询问是否允许随声练控制 {status.not_answering}，但询问窗口被其他窗口遮住了。请找到该窗口并选择<b>允许</b>，或前往<b>系统设置 → 隐私与安全性 → 自动化 → 随声练</b>开启权限。随声练会在一分钟后重试。
       </Notice>
     ),
     m && m.state === "missing" && learning && (
-      <Notice key="models" title="OnKey can’t learn new songs right now">
-        Its learning models, which come inside the app, are missing or damaged{m.error ? ` (${m.error})` : ""}. Songs you’ve
-        already learned still work. To fix it, download OnKey again and replace the app in Applications: your songs and
-        takes are kept.
+      <Notice key="models" title="随声练暂时无法学习新歌曲">
+        App 内置的学习模型缺失或损坏{m.error ? `（${m.error}）` : ""}。已经学习的歌曲仍可使用。请重新下载随声练并替换“应用程序”文件夹中的 App；歌曲和练习记录会保留。
       </Notice>
     ),
     !song && status.youtube_blocked && (
-      <Notice key="youtube" title={`To sing along to YouTube, let OnKey read the video in ${status.youtube_blocked.browser}`}>
-        In {status.youtube_blocked.browser}, choose <b>{status.youtube_blocked.setting}</b>. OnKey only reads the video’s position and the song’s title, nothing else on the page.
+      <Notice key="youtube" title={`要跟唱 YouTube，请允许随声练读取 ${status.youtube_blocked.browser} 中的视频信息`}>
+        请在 {status.youtube_blocked.browser} 中选择<b>{status.youtube_blocked.setting}</b>。随声练只读取视频播放进度和歌曲名称，不会读取页面上的其他内容。
       </Notice>
     ),
     !song && !status.youtube && !ytOn && sounding && sounding.browser !== ytClosed && (sounding.works ? (
-      <Notice key="youtube-off" title={`Playing YouTube or YouTube Music in ${sounding.browser}?`} onClose={() => setYtClosed(sounding.browser)}
-              action={{ label: "Turn on YouTube", run: () => { setYtOn(true); void setYouTube(true).catch(() => setYtOn(false)); } }}>
-        OnKey only picks up songs in your browser once YouTube is on. macOS then asks once to let OnKey control {sounding.browser}, so
-        it can read where the video is.
+      <Notice key="youtube-off" title={`正在 ${sounding.browser} 中播放 YouTube 或 YouTube Music？`} onClose={() => setYtClosed(sounding.browser)}
+              action={{ label: "开启 YouTube", run: () => { setYtOn(true); void setYouTube(true).catch(() => setYtOn(false)); } }}>
+        开启 YouTube 控制后，随声练才能跟随浏览器中的歌曲。macOS 会询问一次是否允许随声练控制 {sounding.browser}，以读取视频播放进度。
       </Notice>
     ) : (
-      <Notice key="youtube-off" title={`Playing YouTube or YouTube Music in ${sounding.browser}?`} onClose={() => setYtClosed(sounding.browser)}>
-        OnKey can’t follow songs in {sounding.browser}. Play them in <b>Chrome, Safari, Brave or Edge</b> and turn on YouTube
-        (here, or in Settings), or turn on <b>listening mode</b> in Settings, which works in any browser.
+      <Notice key="youtube-off" title={`正在 ${sounding.browser} 中播放 YouTube 或 YouTube Music？`} onClose={() => setYtClosed(sounding.browser)}>
+        随声练无法跟随 {sounding.browser} 中的歌曲。请改用<b>Chrome、Safari、Brave 或 Edge</b>，并在此处或“设置”中开启 YouTube 控制；也可以在“设置”中开启<b>仅监听模式</b>，该模式支持所有浏览器。
       </Notice>
     )),
   ].filter(Boolean);
@@ -421,10 +413,10 @@ function NotASong({ id, name }: { id: string; name: string }) {
     <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center px-6">
       <div role="status" className="glass pointer-events-auto w-full max-w-md animate-rise rounded-2xl px-4 py-3 shadow-2xl shadow-black/40">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm text-ink-200"><span className="text-ink-100">{name}</span> sounds like talking, not a song, so OnKey stopped learning it.</p>
-          <button onClick={() => live.dismissNotSong()} aria-label="Dismiss" className="-mr-1 shrink-0 rounded-md px-1.5 text-ink-400 transition hover:text-ink-100">×</button>
+          <p className="text-sm text-ink-200"><span className="text-ink-100">{name}</span> 听起来像对话，不像歌曲，因此随声练已停止学习。</p>
+          <button onClick={() => live.dismissNotSong()} aria-label="关闭" className="-mr-1 shrink-0 rounded-md px-1.5 text-ink-400 transition hover:text-ink-100">×</button>
         </div>
-        <button onClick={() => void learnAnyway(id)} className="mt-1.5 text-xs text-ink-400 underline-offset-2 transition hover:text-ink-200 hover:underline">It’s a song: learn it next time it plays</button>
+        <button onClick={() => void learnAnyway(id)} className="mt-1.5 text-xs text-ink-400 underline-offset-2 transition hover:text-ink-200 hover:underline">这是歌曲：下次播放时继续学习</button>
       </div>
     </div>
   );
@@ -449,10 +441,10 @@ function SpeakerHint({ id }: { id: string }) {
     <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center px-6">
       <div role="status" className="glass pointer-events-auto w-full max-w-md animate-rise rounded-2xl px-4 py-3 shadow-2xl shadow-black/40">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm text-ink-200">OnKey can’t hear you over the music. If you’re singing, turn it down a little or use headphones for a fair score.</p>
-          <button onClick={() => setShown(false)} aria-label="Dismiss" className="-mr-1 shrink-0 rounded-md px-1.5 text-ink-400 transition hover:text-ink-100">×</button>
+          <p className="text-sm text-ink-200">随声练无法从音乐声中听清你的演唱。如果你正在唱歌，请稍微调低音乐音量或使用耳机，以获得准确评分。</p>
+          <button onClick={() => setShown(false)} aria-label="关闭" className="-mr-1 shrink-0 rounded-md px-1.5 text-ink-400 transition hover:text-ink-100">×</button>
         </div>
-        <button onClick={never} className="mt-1.5 text-xs text-ink-400 underline-offset-2 transition hover:text-ink-200 hover:underline">Don’t show again</button>
+        <button onClick={never} className="mt-1.5 text-xs text-ink-400 underline-offset-2 transition hover:text-ink-200 hover:underline">不再显示</button>
       </div>
     </div>
   );
@@ -469,7 +461,7 @@ function Notice({ title, action, onClose, children }: { title: string; action?: 
               {action.label}
             </button>
           )}
-          {onClose && <button onClick={onClose} aria-label="Dismiss" className="-mr-1.5 rounded-md px-1.5 py-1 text-ink-400 transition hover:text-ink-100">×</button>}
+          {onClose && <button onClick={onClose} aria-label="关闭提示" className="-mr-1.5 rounded-md px-1.5 py-1 text-ink-400 transition hover:text-ink-100">×</button>}
         </div>
       </div>
       <p className="mt-1 text-sm text-ink-300 [&_b]:font-medium [&_b]:text-ink-100">{children}</p>
@@ -481,8 +473,8 @@ function Ended({ takes }: { takes: { name: string; artist: string; score: number
   return (
     <div className="absolute inset-0 grid place-items-center bg-ink-950/90 p-6">
       <div className="w-full max-w-md animate-rise text-center">
-        <h2 className="text-2xl font-semibold tracking-tight">Session finished</h2>
-        <p className="mt-1 text-ink-300">{takes.length ? "Here’s how you did." : "No takes long enough to score this time."}</p>
+        <h2 className="text-2xl font-semibold tracking-tight">本次练习结束</h2>
+        <p className="mt-1 text-ink-300">{takes.length ? "这是本次练习的表现。" : "本次没有足够长、可以评分的演唱记录。"}</p>
         <div className="mt-6 space-y-2 text-left">
           {takes.map((t, i) => (
             <Link key={i} href={t.report ? `/take?id=${encodeURIComponent(t.report)}` : "/history"}
@@ -501,23 +493,23 @@ function Kbd({ children }: { children: React.ReactNode }) {
   return <kbd className="mx-0.5 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-sans text-[11px] text-ink-200">{children}</kbd>;
 }
 
-/** macOS hasn't let OnKey hear other apps yet. */
+/** macOS 尚未允许随声练采集其他 App 的系统音频。 */
 function NeedsPermission({ app }: { app: string }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-ink-950/85 px-6">
       <div className="glass w-full max-w-md animate-rise rounded-3xl px-7 py-6 shadow-2xl shadow-black/40">
-        <h2 className="text-lg font-semibold tracking-tight">OnKey can’t hear {app} yet</h2>
+        <h2 className="text-lg font-semibold tracking-tight">随声练暂时无法听取 {app} 的声音</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-300">
-          To follow the song, OnKey listens to {app}’s audio on your Mac. The audio isn’t saved or sent; in listening mode a short fingerprint of it (not the audio) goes to Apple’s Shazam to name the song.
+          为了跟随歌曲，随声练会采集这台 Mac 上 {app} 的系统音频。音频不会保存或发送；仅监听模式下会将短音频指纹（不含音频本身）发送给 Apple Shazam，用于识别歌曲。
         </p>
         <ol className="mt-4 space-y-1.5 text-sm text-ink-200">
-          <li>1. Open <span className="font-medium">System Settings → Privacy &amp; Security</span></li>
-          <li>2. Choose <span className="font-medium">Screen &amp; System Audio Recording</span></li>
-          <li>3. Under <span className="font-medium">System Audio Recording Only</span>, turn on OnKey</li>
+          <li>1. 打开<span className="font-medium">系统设置 → 隐私与安全性</span></li>
+          <li>2. 选择<span className="font-medium">屏幕与系统音频录制</span></li>
+          <li>3. 在<span className="font-medium">仅系统音频录制</span>下开启随声练</li>
         </ol>
         <button onClick={() => openPrivacySettings()}
                 className="mt-5 w-full rounded-xl bg-accent-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-400">
-          Open System Settings
+          打开系统设置
         </button>
       </div>
     </div>
@@ -547,28 +539,28 @@ function Mini({ onExpand }: { onExpand: () => void }) {
         <div data-tauri-drag-region className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
           <div data-tauri-drag-region className="flex items-center gap-3">
             <div className="pointer-events-none min-w-0 flex-1">
-              {song ? <Lyrics compact /> : <p className="text-sm text-ink-400">Play a song in Spotify or Apple Music</p>}
+              {song ? <Lyrics compact /> : <p className="text-sm text-ink-400">在 Spotify 或 Apple Music 中播放歌曲</p>}
             </div>
             <div className="pointer-events-none text-right">
               <div className="tabular text-xl font-bold leading-none">{song?.mode === "learn" ? "–" : score ?? "–"}</div>
-              <div className="text-[9px] uppercase tracking-wider text-ink-500">score</div>
+              <div className="text-[9px] uppercase tracking-wider text-ink-500">得分</div>
             </div>
           </div>
         </div>
         {dancing && (
           <div className="group relative -my-2 w-[50px] shrink-0">
             <Dancer className="absolute inset-0 h-full w-full" />
-            <button onClick={() => setMiniDancer(false)} title="Hide the dancer here"
+            <button onClick={() => setMiniDancer(false)} title="在此隐藏舞者"
                     className="absolute -top-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full text-xs text-ink-400 opacity-0 transition group-hover:opacity-100 hover:bg-white/10 hover:text-white">×</button>
           </div>
         )}
         <div className="flex shrink-0 flex-col items-center justify-between">
-          <button onClick={onExpand} title="Open the full window (M)"
+          <button onClick={onExpand} title="打开完整窗口（M）"
                   className="grid h-7 w-7 place-items-center rounded-full text-ink-300 transition hover:bg-white/8 hover:text-white">
             <Icon d="M14 4h6v6M20 4l-8 8M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" size={15} />
           </button>
           {canDance && !miniDancer && (
-            <button onClick={() => setMiniDancer(true)} title="Show the dancer"
+            <button onClick={() => setMiniDancer(true)} title="显示舞者"
                     className="grid h-7 w-7 place-items-center rounded-full text-ink-400 transition hover:bg-white/8 hover:text-white">
               <Icon d="M12 4.5a1.5 1.5 0 1 0 0 .01M12 7v6M8 9l4 1 4-1M9 21l3-8 3 8" size={15} />
             </button>
@@ -588,7 +580,7 @@ function MiniProgress() {
   if (!song || !d) return null;
   const f = Math.max(0, Math.min(1, live.songTime(live.frozenPerf ?? performance.now()) / d));
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-white/5" title="Through the song">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-white/5" title="歌曲进度">
       <div className="h-full bg-accent-400/70 transition-[width] duration-500 ease-linear" style={{ width: `${f * 100}%` }} />
     </div>
   );

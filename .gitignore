@@ -1,4 +1,12 @@
 node_modules/
+.codex-adaptive-agents/
+.local-evidence/
+# Local collaboration instructions and task handoff are not public product docs.
+/AGENTS.md
+/TASK.md
+/premium-audit.json
+.venv/
+site/.next/
 ui/node_modules/
 ui/out/
 ui/.next/

@@ -55,8 +55,8 @@ impl Browser {
     /// Where the setting OnKey needs lives, for the message that asks you to turn it on.
     pub fn js_setting(self) -> &'static str {
         match self {
-            Browser::Safari => "Safari ▸ Settings ▸ Advanced: tick \"Show features for web developers\", then Develop ▸ Allow JavaScript from Apple Events",
-            _ => "View ▸ Developer ▸ Allow JavaScript from Apple Events",
+            Browser::Safari => "Safari：设置 > 高级 > 勾选“显示网页开发者功能”，再到“开发”菜单启用“允许来自 Apple 事件的 JavaScript”",
+            _ => "查看 > 开发者 > 允许来自 Apple 事件的 JavaScript",
         }
     }
 
@@ -144,15 +144,15 @@ pub fn named(video: &str) -> Option<(String, String)> {
 
 /// Give a video (track id "youtube:…") your own artist and title.
 pub fn rename(id: &str, artist: &str, name: &str) -> Result<(), String> {
-    let video = id.strip_prefix(ID_PREFIX).ok_or("not a YouTube video")?;
+    let video = id.strip_prefix(ID_PREFIX).ok_or("这不是 YouTube 视频")?;
     let (artist, name) = (artist.trim(), name.trim());
     if name.is_empty() {
-        return Err("a title is needed".into());
+        return Err("请填写视频标题".into());
     }
     let mut guard = NAMES.lock().unwrap();
-    let (file, names) = guard.as_mut().ok_or("OnKey's data folder isn't ready")?;
+    let (file, names) = guard.as_mut().ok_or("随声练数据目录尚未就绪")?;
     names.insert(video.to_string(), (artist.to_string(), name.to_string()));
-    crate::store::write_atomic(file, &serde_json::to_vec_pretty(names).unwrap()).map_err(|e| e.to_string())
+    crate::store::write_atomic(file, &serde_json::to_vec_pretty(names).unwrap()).map_err(|e| format!("保存视频名称失败：{e}"))
 }
 
 /// The browser YouTube is followed in.

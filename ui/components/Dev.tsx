@@ -43,10 +43,10 @@ export function DevCopy({ label, text }: { label: string; text: () => string | n
         setDone(ok ? "copied" : "failed");
         setTimeout(() => setDone(""), 1500);
       }}
-      title="Development tool (not in releases)"
+      title="开发工具（正式版本中不显示）"
       className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-fuchsia-400/70 bg-fuchsia-500/10 px-2.5 py-1 text-xs text-fuchsia-200 transition hover:bg-fuchsia-500/20">
-      <span className="rounded bg-fuchsia-500/30 px-1 text-[10px] font-semibold uppercase tracking-wide text-fuchsia-100">dev</span>
-      {done === "copied" ? "Copied" : done === "failed" ? "Couldn’t copy" : label}
+      <span className="rounded bg-fuchsia-500/30 px-1 text-[10px] font-semibold uppercase tracking-wide text-fuchsia-100">开发</span>
+      {done === "copied" ? "已复制" : done === "failed" ? "复制失败" : label}
     </button>
   );
 }

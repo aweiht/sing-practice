@@ -14,7 +14,6 @@
 //!   mic              the microphone chosen in Settings (a Core Audio device uid); none: automatic (capture.rs)
 //!   show_lyrics      show lyrics (from LRCLIB) with the notes; on unless turned off. Off: LRCLIB is never asked
 //!                    (lyrics.rs), and lyrics already kept on this Mac are hidden, not deleted (the window)
-//!   auto_update      check GitHub Releases for a new OnKey on launch and daily (updater.rs); on unless turned off
 //!   output_timing    per output device (Core Audio uid): your tap-along check of its delay, and whether its
 //!                    suggestion to check was dismissed (timing.rs)
 //! Control of Spotify and Apple Music is on by default (setup asks macOS for it; its "Listen only" turns both off),

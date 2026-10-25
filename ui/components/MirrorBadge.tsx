@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { live, mirror, useSession } from "@/lib/session";
 
-const TIP = "Live mirror (read-only): use the OnKey app to change anything";
+const TIP = "实时镜像（只读）：请在随声练 App 中进行更改";
 
 export default function MirrorBadge() {
   const [on, setOn] = useState(false);
@@ -51,8 +51,8 @@ function Badge() {
       el.dataset.songTime = Number.isFinite(t) ? t.toFixed(3) : "";
       el.dataset.lyricIndex = String(i);
       el.dataset.lagMs = Number.isFinite(lag) ? lag.toFixed(1) : "";
-      setText([Number.isFinite(t) ? `${t.toFixed(2)} s` : "no song", i >= 0 ? `line ${i}` : "",
-               Number.isFinite(lag) ? `lag ${lag.toFixed(1)} ms` : ""].filter(Boolean).join(" · "));
+      setText([Number.isFinite(t) ? `${t.toFixed(2)} 秒` : "无播放", i >= 0 ? `第 ${i + 1} 句` : "",
+               Number.isFinite(lag) ? `延迟 ${lag.toFixed(1)} 毫秒` : ""].filter(Boolean).join(" · "));
     }, 100);
     return () => clearInterval(id);
   }, []);
@@ -60,7 +60,7 @@ function Badge() {
     <div id="mirror-badge" ref={ref} data-connected={connected ? "1" : "0"} title={TIP}
          className="pointer-events-auto fixed bottom-3 right-3 z-[1000] flex items-center gap-2 rounded-full border border-white/10 bg-black/70 px-3 py-1.5 text-xs text-ink-200 shadow-lg backdrop-blur">
       <span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-400" : "bg-red-400"}`} />
-      <span className="font-semibold">Live mirror (read-only)</span>
+      <span className="font-semibold">实时镜像（只读）</span>
       {text && <span className="tabular text-ink-400">{text}</span>}
     </div>
   );

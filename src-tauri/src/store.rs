@@ -1125,7 +1125,7 @@ fn to_trash(p: &Path) -> bool {
     }
     if let Some(home) = std::env::var_os("HOME") {
         let name = p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
-        let dest = Path::new(&home).join(".Trash").join(format!("OnKey {} {name}", now_iso().replace(':', ".")));
+        let dest = Path::new(&home).join(".Trash").join(format!("随声练 {} {name}", now_iso().replace(':', ".")));
         if std::fs::rename(p, &dest).is_ok() {
             return true;
         }

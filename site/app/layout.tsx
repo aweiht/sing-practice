@@ -1,27 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { FlowMyna } from "@/components/FlowMyna";
-import Script from "next/script";
-import { PLAUSIBLE_DOMAIN, SHARE_IMAGE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
 const DESCRIPTION =
-  "OnKey is a free, open-source singing trainer for the Mac. It listens to the music playing on your Mac, learns the singer's melody, and shows you a pitch guide as you sing, so you can see where you're sharp or flat. It never saves the music.";
+  "随声练是一款开源的 Mac 歌唱练习工具。它从正在播放的音乐中学习歌手旋律，并在你演唱时显示音高参考。音乐只在播放时分析，不会保存。";
 
 export const metadata: Metadata = {
-  title: { default: "OnKey: learn to sing the songs you love", template: "%s · OnKey" },
+  title: { default: "随声练：跟着喜欢的歌练音准", template: "%s · 随声练" },
   description: DESCRIPTION,
-  // Link previews need the site's own address (LAUNCH.siteUrl in lib/site.ts).
-  ...(SITE_URL && {
-    metadataBase: new URL(SITE_URL),
-    openGraph: { title: "OnKey", description: DESCRIPTION, url: "/", siteName: "OnKey", type: "website", images: [{ url: SHARE_IMAGE, width: 1280, height: 640, alt: "OnKey: learn to sing the songs you love" }] },
-    twitter: { card: "summary_large_image", title: "OnKey", description: DESCRIPTION, images: [SHARE_IMAGE] },
-  }),
+  applicationName: "随声练",
+  openGraph: { title: "随声练", description: DESCRIPTION, siteName: "随声练", type: "website" },
 };
 
 export const viewport: Viewport = {
@@ -33,20 +22,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="zh-CN">
       <body className="flex min-h-dvh flex-col">
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-panel focus:px-3 focus:py-2">
-          Skip to content
+          跳转到正文
         </a>
         <Header />
         <main id="main" className="flex-1">{children}</main>
         <Footer />
-        {/* visit counts without cookies or personal data (Plausible); outbound links (download, GitHub, Discord)
-            are counted as they're followed. Plausible ignores localhost. */}
-        <FlowMyna />
-        {PLAUSIBLE_DOMAIN && (
-          <Script defer data-domain={PLAUSIBLE_DOMAIN} src="https://plausible.io/js/script.outbound-links.js" strategy="afterInteractive" />
-        )}
       </body>
     </html>
   );

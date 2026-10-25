@@ -150,7 +150,7 @@ private func drawFrame(_ ctx: CGContext, _ spec: Spec, bg: CGImage, now: Double)
     }
     // the notes hit so far in the clip
     let hit = spec.notes.filter { $0.t0 >= 0 && $0.t0 < spec.seconds && $0.t1 <= now && $0.hit >= 0.5 }.count
-    text(ctx, "\(hit) note\(hit == 1 ? "" : "s") hit", y: 1690, size: 56, color: rgb(181, 168, 255), weight: .semibold)
+    text(ctx, "唱准了 \(hit) 个音符", y: 1690, size: 56, color: rgb(181, 168, 255), weight: .semibold)
     ctx.restoreGState()
 }
 

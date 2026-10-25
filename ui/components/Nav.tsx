@@ -9,13 +9,13 @@ export function Logo() {
     if (path === "/") { e.preventDefault(); window.dispatchEvent(new CustomEvent("onkey-songs-to-try")); }
   };
   return (
-    <Link href="/" onClick={onClick} title={path === "/" ? "Songs to try" : "Sing"} className="flex items-center gap-2.5 rounded-xl transition hover:opacity-80">
+    <Link href="/" onClick={onClick} title={path === "/" ? "试试这些歌曲" : "开始练习"} className="flex items-center gap-2.5 rounded-xl transition hover:opacity-80">
       <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg shadow-accent-600/30">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
           <path d="M3 14c2.5 0 2.5-6 5-6s2.5 8 5 8 2.5-10 5-10 2 4 3 4" />
         </svg>
       </span>
-      <span className="text-[15px] font-semibold tracking-tight">OnKey</span>
+      <span className="text-[15px] font-semibold tracking-tight">随声练</span>
     </Link>
   );
 }
@@ -30,5 +30,5 @@ export function Nav() {
       </Link>
     );
   };
-  return <nav className="flex items-center gap-1">{item("/", "Sing")}{item("/library", "Library")}{item("/history", "History")}{item("/settings", "Settings")}</nav>;
+  return <nav aria-label="主导航" className="flex items-center gap-1">{item("/", "练习")}{item("/library", "曲库")}{item("/history", "演唱记录")}{item("/settings", "设置")}</nav>;
 }

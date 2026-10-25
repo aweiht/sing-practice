@@ -36,7 +36,6 @@ pub mod syllables;
 pub mod take;
 pub mod takeaudio;
 pub mod timing;
-pub mod updater;
 pub mod tracker;
 pub mod viz;
 pub mod youtube;
@@ -409,7 +408,7 @@ fn output_timing_dismiss(uid: String) {
 
 #[tauri::command]
 fn settings_now() -> Value {
-    serde_json::json!({"listening": settings::listening(), "control_spotify": settings::control("control_spotify"),
+    serde_json::json!({"version": env!("CARGO_PKG_VERSION"), "listening": settings::listening(), "control_spotify": settings::control("control_spotify"),
         "control_music": settings::control("control_music"), "youtube": youtube::enabled(), "listen_only": settings::listen_only(),
         "hide_starters": settings::get("hide_starters"), "shazam": settings::shazam(), "show_lyrics": settings::show_lyrics(),
         "keep_models": lowmem::keep_learning_models(), "keep_models_default": lowmem::keep_by_default(), "small_mac": lowmem::low_memory(),
@@ -506,9 +505,9 @@ fn share_window(id: String, t: Option<f64>, store: State<store::Store>) -> Optio
 /// song's start time ("0:42") on the clipboard, for Instagram's song picker. The video's path.
 #[tauri::command(async)]
 fn share_take(id: String, start: i64, store: State<store::Store>) -> Result<Value, String> {
-    let r = store.take_result(&id).ok_or("this take couldn't be found")?;
-    let dir = store.take_dir(&id).ok_or("this take couldn't be found")?;
-    let downloads = std::path::PathBuf::from(std::env::var("HOME").map_err(|e| e.to_string())?).join("Downloads");
+    let r = store.take_result(&id).ok_or("找不到这段演唱")?;
+    let dir = store.take_dir(&id).ok_or("找不到这段演唱")?;
+    let downloads = std::path::PathBuf::from(std::env::var("HOME").map_err(|_| "无法获取用户目录".to_string())?).join("Downloads");
     let t = std::time::Instant::now();
     let path = share::render(&r, &dir, start, &downloads)?;
     engine::log(&format!("share video of {} from {}: {} in {:.1} s", r["track"]["name"].as_str().unwrap_or("?"),
@@ -552,8 +551,12 @@ fn open_link(url: String) {
     }
 }
 
-/// Settings' own links, exactly these: the "Made by" site, OnKey's site and its Discord.
-const FIXED_LINKS: [&str; 3] = ["https://dsmurrell.com", "https://singonkey.app", "https://discord.gg/afHvqTNS6r"];
+/// Trusted project links: this repository, its issue tracker, and the upstream source project.
+const FIXED_LINKS: [&str; 3] = [
+    "https://github.com/aweiht/sing-practice",
+    "https://github.com/aweiht/sing-practice/issues",
+    "https://github.com/dsmurrell/onkey",
+];
 
 /// May `open_link` open this? A song's Apple Music page, a Spotify search or playlist, or one of Settings' own
 /// links; nothing with spaces or control characters.
@@ -570,11 +573,11 @@ fn starter_cover(artist: String, title: String, app: tauri::AppHandle) -> Option
     Some(serde_json::json!({"art": c.art, "link": c.link}))
 }
 
-/// The open-source licences and notices for everything OnKey ships (THIRD_PARTY_NOTICES.md, a bundle resource).
+/// The open-source licences and notices for everything 随声练 ships (THIRD_PARTY_NOTICES.md, a bundle resource).
 #[tauri::command]
 fn third_party_notices(app: tauri::AppHandle) -> Result<String, String> {
-    let path = app.path().resource_dir().map_err(|e| e.to_string())?.join("THIRD_PARTY_NOTICES.md");
-    std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))
+    let path = app.path().resource_dir().map_err(|e| format!("无法获取应用资源目录：{e}"))?.join("THIRD_PARTY_NOTICES.md");
+    std::fs::read_to_string(&path).map_err(|e| format!("无法读取第三方许可文件 {}：{e}", path.display()))
 }
 
 /// The window's drawing while a song plays (frame intervals, frames dropped, how late updates reach it), every few
@@ -584,16 +587,16 @@ fn perf_frames(report: Value) {
     records::window_frames(&report);
 }
 
-/// "Report a problem": put OnKey's records together in a folder of their own (report.rs), about a take when given:
+/// "报告问题": put 随声练's records together in a folder of their own (report.rs), about a take when given:
 /// what's in it, for the window to show before anything is saved.
 #[tauri::command(async)]
 fn report_prepare(take: Option<String>, app: tauri::AppHandle) -> Result<Value, String> {
-    let data = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let data = app.path().app_data_dir().map_err(|e| format!("无法获取随声练数据目录：{e}"))?;
     let take = take.filter(|t| store::valid_take_id(t));
     report::prepare(&data, take.as_deref(), 3)
 }
 
-/// Save the report prepared, with your description: macOS's save panel (~/Desktop/OnKey-report-<date>.zip by
+/// Save the report prepared, with your description: macOS's save panel (~/Desktop/随声练-问题报告-<date>.zip by
 /// default). Where it was saved (with ~ for the home folder), or None if cancelled.
 #[tauri::command(async)]
 fn report_save(description: String, app: tauri::AppHandle) -> Result<Option<String>, String> {
@@ -624,12 +627,12 @@ fn report_show(path: String) {
     }
 }
 
-/// A new GitHub issue for OnKey in the browser: the bug report form (.github/ISSUE_TEMPLATE/bug.yml), titled, with
+/// A new GitHub issue for 随声练 in the browser: the bug report form (.github/ISSUE_TEMPLATE/bug.yml), titled, with
 /// this version filled in; the form asks for the zip to be attached (nothing is uploaded).
 #[tauri::command(async)]
 fn report_issue(take: Option<String>) {
     let b = records::build();
-    let title = if take.is_some() { "Problem with a take" } else { "Problem report" };
+    let title = if take.is_some() { "演唱问题" } else { "问题反馈" };
     let version = format!("{} ({})", b["version"].as_str().unwrap_or("?"), b["sha"].as_str().unwrap_or("?"));
     let url = format!("{}?template=bug.yml&title={}&version={}", report::NEW_ISSUE_URL,
                       urlencoding::encode(title), urlencoding::encode(&version));
@@ -654,12 +657,12 @@ fn ui_moving(moving: bool) {
 #[tauri::command]
 fn set_mini(on: bool, window: tauri::WebviewWindow) -> Result<(), String> {
     use tauri::{LogicalPosition, LogicalSize};
-    let e = |r: tauri::Result<()>| r.map_err(|e| e.to_string());
+    let e = |r: tauri::Result<()>| r.map_err(|e| format!("调整窗口失败：{e}"));
     if on {
         e(window.unmaximize())?;
         e(window.set_min_size(Some(LogicalSize::new(320.0, 80.0))))?;
         e(window.set_size(LogicalSize::new(540.0, 92.0)))?;
-        if let Some(m) = window.current_monitor().map_err(|e| e.to_string())? {
+        if let Some(m) = window.current_monitor().map_err(|e| format!("读取显示器信息失败：{e}"))? {
             let scale = m.scale_factor();
             let size = m.size().to_logical::<f64>(scale);
             let pos = m.position().to_logical::<f64>(scale);
@@ -686,17 +689,17 @@ fn set_mini(on: bool, window: tauri::WebviewWindow) -> Result<(), String> {
 fn window_buttons(window: &tauri::WebviewWindow, visible: bool) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        let ns = window.ns_window().map_err(|e| e.to_string())? as usize;
+        let ns = window.ns_window().map_err(|e| format!("获取窗口信息失败：{e}"))? as usize;
         window.run_on_main_thread(move || {
             use objc2_app_kit::{NSWindow, NSWindowButton};
             let ns = unsafe { &*(ns as *const NSWindow) };
             for b in [NSWindowButton::CloseButton, NSWindowButton::MiniaturizeButton, NSWindowButton::ZoomButton] {
                 if let Some(button) = ns.standardWindowButton(b) { button.setHidden(!visible); }
             }
-        }).map_err(|e| e.to_string())?;
+        }).map_err(|e| format!("更改窗口按钮失败：{e}"))?;
     }
     #[cfg(not(target_os = "macos"))]
-    window.set_decorations(visible).map_err(|e| e.to_string())?;
+    window.set_decorations(visible).map_err(|e| format!("更改窗口边框失败：{e}"))?;
     Ok(())
 }
 
@@ -753,46 +756,57 @@ fn setup_done(done: bool) {
     permissions::set_done(done);
 }
 
-/// Updates (updater.rs): this version, and whether a newer one is downloaded and waiting.
-#[tauri::command]
-fn update_status(app: tauri::AppHandle) -> Value {
-    updater::status(&app)
-}
-
-/// Settings' "Check now".
-#[tauri::command(async)]
-fn update_check(app: tauri::AppHandle) -> Value {
-    let _ = updater::check(&app);
-    updater::status(&app)
-}
-
-/// Settings' "Check for updates automatically".
-#[tauri::command]
-fn update_set_auto(on: bool, app: tauri::AppHandle) -> Value {
-    settings::set(updater::SETTING, on);
-    updater::status(&app)
-}
-
-/// "Restart to update": now, or once the song playing is over.
-#[tauri::command]
-fn update_restart(app: tauri::AppHandle, shared: State<Shared>) -> Value {
-    updater::restart_when_ready(app, shared.inner().clone(), QUIT_WAIT)
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     devtest::init();
     let shared: Shared = Arc::new(Mutex::new(engine::Shared { blind: false, echo_cancel: true, skip_to: None, finish: false, play_along: None, along_heard: false, player_now: None, takes: Vec::new() }));
     tauri::Builder::default()
         .manage(shared.clone())
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        // the standard menus, with "Report a Problem…" in Help (the window opens it: components/ReportProblem.tsx)
+        // macOS 的系统菜单文案使用简体中文；保留标准编辑、窗口和应用菜单行为。
         .menu(|handle| {
-            let menu = tauri::menu::Menu::default(handle)?;
-            if let Some(help) = menu.get(tauri::menu::HELP_SUBMENU_ID).and_then(|h| h.as_submenu().cloned()) {
-                help.append(&tauri::menu::MenuItem::with_id(handle, "report", "Report a Problem…", true, None::<&str>)?)?;
-            }
-            Ok(menu)
+            use tauri::menu::{AboutMetadata, Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID};
+
+            let about = AboutMetadata {
+                name: Some("随声练".to_string()),
+                version: Some(handle.package_info().version.to_string()),
+                ..Default::default()
+            };
+            let app_menu = Submenu::with_items(handle, "随声练", true, &[
+                &PredefinedMenuItem::about(handle, Some("关于随声练"), Some(about))?,
+                &PredefinedMenuItem::separator(handle)?,
+                &PredefinedMenuItem::services(handle, Some("服务"))?,
+                &PredefinedMenuItem::separator(handle)?,
+                &PredefinedMenuItem::hide(handle, Some("隐藏随声练"))?,
+                &PredefinedMenuItem::hide_others(handle, Some("隐藏其他"))?,
+                &PredefinedMenuItem::show_all(handle, Some("显示全部"))?,
+                &PredefinedMenuItem::separator(handle)?,
+                &PredefinedMenuItem::quit(handle, Some("退出随声练"))?,
+            ])?;
+            let file_menu = Submenu::with_items(handle, "文件", true, &[
+                &PredefinedMenuItem::close_window(handle, Some("关闭窗口"))?,
+            ])?;
+            let edit_menu = Submenu::with_items(handle, "编辑", true, &[
+                &PredefinedMenuItem::undo(handle, Some("撤销"))?,
+                &PredefinedMenuItem::redo(handle, Some("重做"))?,
+                &PredefinedMenuItem::separator(handle)?,
+                &PredefinedMenuItem::cut(handle, Some("剪切"))?,
+                &PredefinedMenuItem::copy(handle, Some("拷贝"))?,
+                &PredefinedMenuItem::paste(handle, Some("粘贴"))?,
+                &PredefinedMenuItem::select_all(handle, Some("全选"))?,
+            ])?;
+            let view_menu = Submenu::with_items(handle, "显示", true, &[
+                &PredefinedMenuItem::fullscreen(handle, Some("进入全屏"))?,
+            ])?;
+            let window_menu = Submenu::with_id_and_items(handle, WINDOW_SUBMENU_ID, "窗口", true, &[
+                &PredefinedMenuItem::minimize(handle, Some("最小化"))?,
+                &PredefinedMenuItem::maximize(handle, Some("缩放"))?,
+                &PredefinedMenuItem::separator(handle)?,
+                &PredefinedMenuItem::close_window(handle, Some("关闭窗口"))?,
+            ])?;
+            let help_menu = Submenu::with_id_and_items(handle, HELP_SUBMENU_ID, "帮助", true, &[
+                &MenuItem::with_id(handle, "report", "报告问题…", true, None::<&str>)?,
+            ])?;
+            Menu::with_items(handle, &[&app_menu, &file_menu, &edit_menu, &view_menu, &window_menu, &help_menu])
         })
         .on_menu_event(|app, ev| {
             if ev.id() == "report" {
@@ -802,7 +816,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![catch_up, player_control, play_track, set_blind, takes, library, take, take_audio, share_window, share_take, open_privacy_settings, ui_log, ui_moving, skip_to, set_mini, forget_song, stop_learning, learn_anyway, delete_take, set_echo_cancel, set_youtube, set_setting, settings_now, allow_control, open_in_app, along_mode, join_along, finish_take, play_along, stop_play_along, player_now, dev_tools, dev_copy, rename_track, take_playing,
             setup_status, setup_request, setup_open_settings, setup_meter, setup_level, setup_done, setup_control, third_party_notices, perf_frames, report_prepare, report_save, report_open_folder, report_show, report_issue, open_link, starter_cover, set_favorite, is_favorite, open_app, mics, set_mic, output_timing, output_timing_check, output_timing_reset, output_timing_dismiss,
-            update_status, update_check, update_set_auto, update_restart])
+            ])
         .setup(move |app| {
             // the records first: this log session starts with the build and the Mac (records.rs)
             records::init(&app.path().app_data_dir()?);
@@ -867,12 +881,11 @@ pub fn run() {
             mirror::start(app.handle().clone(), store.clone());
             engine::keep_learned_lyrics(store.clone());
             engine::spawn(app.handle().clone(), shared.clone(), store, learners);
-            updater::start(app.handle().clone());
             on_terminate();
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("error while running OnKey")
+        .expect("随声练启动失败")
         .run(|app, event| match event {
             // quitting (from the menu, or the last window closed): OnKey looks gone at once (windows and Dock icon),
             // and finishes learning the song playing and any still waiting in the background before it exits.
@@ -887,13 +900,12 @@ pub fn run() {
                 let _ = app.set_dock_visibility(false);
                 std::thread::spawn(|| {
                     engine::shutdown(QUIT_LEARN_WAIT);
-                    updater::install();     // an update downloaded and not yet installed: the next launch is the new version
                     relaunch_if_asked();
                     std::process::exit(0);
                 });
             }
             // ⌘Q again (or the last window closed) while it finishes out of sight: the quit going on exits when done.
-            // (A requested exit, `code` Some, is the update's restart, which has waited with the quit itself.)
+            // An exit requested while shutdown finishes is ignored; a new launch is handled by Reopen below.
             tauri::RunEvent::ExitRequested { api, code: None, .. } => {
                 api.prevent_exit();
             }
@@ -906,14 +918,12 @@ pub fn run() {
             }
             tauri::RunEvent::Exit => {
                 engine::shutdown(QUIT_WAIT);
-                updater::install();
             }
             _ => {}
         });
 }
 
-/// How long a quit waits for the song playing (and any still finishing) to be learned and saved, when it has to be
-/// quick: told to stop (logging out, `./run` restarting the development build), or restarting for an update.
+/// How long a quit waits for the song playing (and any still finishing) to be learned and saved when it has to be quick.
 const QUIT_WAIT: std::time::Duration = std::time::Duration::from_secs(25);
 
 static RELAUNCH: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -949,7 +959,6 @@ fn on_terminate() {
         }
         engine::log("told to stop (SIGTERM)");
         engine::shutdown(QUIT_WAIT);
-        updater::install();
         std::process::exit(0);
     });
 }
@@ -958,12 +967,11 @@ fn on_terminate() {
 mod tests {
     #[test]
     fn settings_links_open_only_exactly_as_given() {
-        assert!(super::link_allowed("https://discord.gg/afHvqTNS6r"));
-        assert!(super::link_allowed("https://singonkey.app"));
-        assert!(super::link_allowed("https://dsmurrell.com"));
-        assert!(!super::link_allowed("https://discord.gg/someoneelse"));
-        assert!(!super::link_allowed("https://singonkey.app.evil.example"));
-        assert!(!super::link_allowed("https://discord.gg/afHvqTNS6r --args"));
+        assert!(super::link_allowed("https://github.com/aweiht/sing-practice"));
+        assert!(super::link_allowed("https://github.com/aweiht/sing-practice/issues"));
+        assert!(super::link_allowed("https://github.com/dsmurrell/onkey"));
+        assert!(!super::link_allowed("https://github.com/aweiht/sing-practice.evil.example"));
+        assert!(!super::link_allowed("https://github.com/aweiht/sing-practice/issues --args"));
     }
 
     use super::*;

@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: How OnKey works, privacy and troubleshooting
-    url: https://singonkey.app/docs/faq/
-    about: The FAQ answers most questions about permissions, what leaves your Mac, and timing on Bluetooth.
+  - name: 随声练中文说明
+    url: https://github.com/aweiht/sing-practice/blob/main/README.zh-CN.md
+    about: 查看构建步骤、隐私说明、项目状态与许可证。

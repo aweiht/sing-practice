@@ -38,11 +38,10 @@ export function smoothed(get: (f: number) => number, f: number, w = 3) {
 }
 
 export function scoreWord(score: number) {
-  return score >= 90 ? "Superb" : score >= 80 ? "Great" : score >= 65 ? "Good" : score >= 45 ? "Getting there" : "Keep at it";
+  return score >= 90 ? "非常出色" : score >= 80 ? "很棒" : score >= 65 ? "不错" : score >= 45 ? "继续进步" : "继续练习";
 }
 
 export function when(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short" }) + ", " +
-    d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  return new Intl.DateTimeFormat("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(d);
 }

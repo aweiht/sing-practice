@@ -1,34 +1,32 @@
 import Link from "next/link";
 import { DownloadButton } from "@/components/DownloadButton";
 import { LaneArt } from "@/components/LaneArt";
-import { DemoVideo } from "@/components/DemoVideo";
-import { GitHubStars } from "@/components/GitHubStars";
 import { FIRST_QUESTIONS, FaqList } from "@/components/Faq";
-import { DOWNLOAD_URL, GITHUB_URL, LAUNCH, REQUIREMENTS, asset, DISCORD_URL } from "@/lib/site";
+import { GITHUB_URL, REQUIREMENTS } from "@/lib/site";
 
 const FACTS = [
-  "Free and open source (MIT)",
-  "Apple Silicon, macOS 14.2+",
-  "Runs on your Mac, no account",
-  "Never saves the music it listens to",
+  "MIT 许可证开源",
+  "支持 Apple 芯片，要求 macOS 14.2 或更新版本",
+  "本机运行，无需账号",
+  "不会保存正在分析的音乐",
 ];
 
 const STEPS = [
   {
-    title: "Play a song",
-    body: "In Spotify, Apple Music, or YouTube, the way you already do. OnKey listens along. It doesn't play or download music itself.",
+    title: "播放一首歌",
+    body: "像平时一样使用 Spotify、Apple Music 或浏览器中的 YouTube。随声练会跟随分析，不会播放或下载音乐。",
   },
   {
-    title: "The first play teaches it",
-    body: "When the song ends, OnKey takes a couple of minutes to learn the singer's notes and line up the lyrics.",
+    title: "首次播放时学习旋律",
+    body: "歌曲结束后，随声练会尝试提取歌手音高、生成音符并对齐歌词。处理时间取决于设备与歌曲。",
   },
   {
-    title: "Sing with the pitch guide",
-    body: "Next time, the notes scroll towards you and your voice is drawn over them. Green is on the note, red is off.",
+    title: "跟着音高参考演唱",
+    body: "再次播放时，音符会向当前进度移动，你的音高会叠加显示。绿色表示接近目标音，红色表示偏差较大。",
   },
   {
-    title: "See how you did",
-    body: "You get a score, the notes you hit and missed, and your recording to play back with the song.",
+    title: "查看练习结果",
+    body: "你可以查看评分、命中或偏离的音符，并回听自己的录音。",
   },
 ];
 
@@ -44,14 +42,6 @@ function GitHubMark() {
   );
 }
 
-function DiscordMark() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
-      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
-    </svg>
-  );
-}
-
 export default function Home() {
   return (
     <>
@@ -59,23 +49,21 @@ export default function Home() {
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -top-40 h-[480px] bg-[radial-gradient(700px_300px_at_50%_30%,var(--accent-wash),transparent)]" />
         <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-16 pt-10 sm:px-6 md:pt-20 lg:grid-cols-[1.05fr_1fr] lg:items-center">
           <div className="rise grid gap-6">
-            <p className="text-sm font-medium text-accent-soft">A free, open-source singing trainer for Mac</p>
+            <p className="text-sm font-medium text-accent-soft">面向 Mac 的开源歌唱练习工具</p>
             <h1 className="text-[2.15rem] font-semibold leading-[1.1] tracking-tight text-fg sm:text-5xl sm:leading-[1.08]">
-              Learn to sing the songs you love.
+              跟着喜欢的歌，练习唱准每一个音。
             </h1>
-            <p className="-mt-3 text-balance text-base italic text-muted">Saving shower singers from themselves since 2026</p>
             <p className="max-w-[54ch] text-lg leading-relaxed text-muted">
-              OnKey listens to the music playing on your Mac and learns the singer's melody. Then it shows you a
-              pitch guide as you sing, so you can see where you're sharp or flat.
+              随声练从 Mac 正在播放的音乐中学习歌手旋律，并在你演唱时呈现音高参考，让你看见音准偏差。
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <DownloadButton where="top" className={primary} />
-              <a href={GITHUB_URL} data-track="GitHub" className={secondary}><GitHubMark />Source on GitHub<GitHubStars /></a>
+              <a href={GITHUB_URL} className={secondary}><GitHubMark />查看源码</a>
               <Link href="/docs/how-it-works/" className="inline-flex min-h-12 items-center px-2 font-medium text-accent-soft underline-offset-4 hover:underline">
-                How it works →
+                工作原理 →
               </Link>
             </div>
-            <ul className="grid gap-x-6 gap-y-1.5 text-sm text-muted sm:grid-cols-2" aria-label="At a glance">
+            <ul className="grid gap-x-6 gap-y-1.5 text-sm text-muted sm:grid-cols-2" aria-label="产品概览">
               {FACTS.map((f) => (
                 <li key={f} className="flex items-start gap-2">
                   <span aria-hidden="true" className="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-good" />
@@ -86,22 +74,15 @@ export default function Home() {
           </div>
 
           <figure className="rise grid gap-3" style={{ animationDelay: "120ms" }}>
-            {LAUNCH.demoVideo ? (
-              // the video is the app's own window: no mock window around it
-              <div className="overflow-hidden rounded-2xl border border-line bg-black shadow-2xl shadow-black/30">
-                <DemoVideo src={asset(LAUNCH.demoVideo)} poster={LAUNCH.demoPoster ? asset(LAUNCH.demoPoster) : undefined} />
+            <div className="overflow-hidden rounded-2xl border border-line bg-panel shadow-2xl shadow-black/20">
+              <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" /><span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" /><span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                <span className="ml-3 truncate text-xs text-muted">练习示意 · 得分 82</span>
               </div>
-            ) : (
-              <div className="overflow-hidden rounded-2xl border border-line bg-panel shadow-2xl shadow-black/20">
-                <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" /><span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" /><span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                  <span className="ml-3 truncate text-xs text-muted">Learned song · score 82</span>
-                </div>
-                <LaneArt />
-              </div>
-            )}
+              <LaneArt />
+            </div>
             <figcaption className="text-center text-xs text-muted">
-              {LAUNCH.demoVideo ? "Me singing along, scored as I go." : "Illustration of the singing lane. Demo video coming soon."}
+              音符轨道与音高位置示意图；当前没有演示视频或中文版发布安装包。
             </figcaption>
           </figure>
         </div>
@@ -109,18 +90,18 @@ export default function Home() {
 
       <section className="border-t border-line bg-bg-raised" aria-labelledby="how">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 id="how" className="text-2xl font-semibold tracking-tight text-fg">How it works</h2>
+          <h2 id="how" className="text-2xl font-semibold tracking-tight text-fg">使用流程</h2>
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
               <li key={s.title} className="grid content-start gap-2 rounded-2xl border border-line bg-panel p-5">
-                <span className="tabular text-base font-medium text-accent-soft">Step {i + 1}</span>
+                <span className="tabular text-base font-medium text-accent-soft">步骤 {i + 1}</span>
                 <h3 className="text-lg font-semibold text-fg">{s.title}</h3>
                 <p className="text-base leading-relaxed text-muted">{s.body}</p>
               </li>
             ))}
           </ol>
           <p className="mt-6 text-base text-muted">
-            Want the details? <Link href="/docs/how-it-works/" className="text-accent-soft underline underline-offset-4">Read exactly how OnKey works</Link>, with diagrams.
+            需要了解细节？查看带图解的<Link href="/docs/how-it-works/" className="text-accent-soft underline underline-offset-4">工作原理说明</Link>。
           </p>
         </div>
       </section>
@@ -128,19 +109,17 @@ export default function Home() {
       <section className="border-t border-line" aria-labelledby="privacy">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-2">
           <div className="grid content-start gap-4">
-            <h2 id="privacy" className="text-2xl font-semibold tracking-tight text-fg">It listens, but never saves the music</h2>
+            <h2 id="privacy" className="text-2xl font-semibold tracking-tight text-fg">只分析音乐，不保存音乐</h2>
             <p className="leading-relaxed text-muted">
-              OnKey listens to the music only to learn the melody and keep the notes in time. It never saves or
-              uploads it. What stays on your Mac is the notes it learns and a recording of your mic for each take, so
-              you can hear yourself back.
+              随声练会在本机分析正在播放的音乐，以学习旋律并校准进度，不会保存或上传音乐。应用会保存学到的音符以及每次练习的麦克风录音，供你回听。
             </p>
-            <Link href="/docs/privacy/" className="text-sm text-accent-soft underline underline-offset-4">Privacy &amp; legal</Link>
+            <Link href="/docs/privacy/" className="text-sm text-accent-soft underline underline-offset-4">隐私与法律说明</Link>
           </div>
           <ul className="grid content-start gap-3">
             {[
-              ["No account, no server, no analytics", "What leaves your Mac: a Shazam signature (not audio) to name a new song, the song's name to LRCLIB for lyrics and to Apple for covers, and a daily update check on GitHub."],
-              ["Fair scoring", "Singing an octave lower still counts, and your timing gets 80 ms of slack. Being sharp or flat is what costs you."],
-              ["Headphones or speakers", "Headphones give the most reliable scores. On speakers, your mic hears the song as well as you, so OnKey filters the song out."],
+              ["无账号、无服务端、无网站统计", "应用联网请求只用于歌词查询、专辑封面和歌曲识别；详情见隐私说明。"],
+              ["评分会考虑演唱音域", "高低八度会按同一个音计算，并为演唱与伴奏的时差预留容差。"],
+              ["耳机或扬声器均可练习", "耳机通常能获得更稳定的评分。使用扬声器时，麦克风也可能收进部分伴奏。"],
             ].map(([t, b]) => (
               <li key={t} className="rounded-2xl border border-line bg-panel p-4">
                 <p className="font-medium text-fg">{t}</p>
@@ -154,8 +133,8 @@ export default function Home() {
       <section className="border-t border-line bg-bg-raised" aria-labelledby="faq">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
           <div className="grid content-start gap-3">
-            <h2 id="faq" className="text-2xl font-semibold tracking-tight text-fg">Questions</h2>
-            <p className="text-muted">The ones people ask first. <Link href="/docs/faq/" className="text-accent-soft underline underline-offset-4">All questions</Link>.</p>
+            <h2 id="faq" className="text-2xl font-semibold tracking-tight text-fg">常见问题</h2>
+            <p className="text-muted">先看几个常见问题。<Link href="/docs/faq/" className="text-accent-soft underline underline-offset-4">查看全部问题</Link>。</p>
           </div>
           <FaqList items={FIRST_QUESTIONS} />
         </div>
@@ -164,14 +143,12 @@ export default function Home() {
       <section className="border-t border-line" aria-labelledby="get">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10">
           <div className="grid gap-2">
-            <h2 id="get" className="text-2xl font-semibold tracking-tight text-fg">Get OnKey</h2>
-            <p className="text-muted">Free and open source under the MIT licence. {REQUIREMENTS.join(", ")}.</p>
+            <h2 id="get" className="text-2xl font-semibold tracking-tight text-fg">从源码开始</h2>
+            <p className="text-muted">随声练遵循 MIT 许可证开源。{REQUIREMENTS.join("；")}。目前尚无中文版发布安装包。</p>
           </div>
-          {/* on a phone the three buttons stack at one width; side by side from sm up */}
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <DownloadButton where="bottom" className={primary} />
-            <a href={GITHUB_URL} data-track="GitHub" className={secondary}><GitHubMark />Source on GitHub<GitHubStars /></a>
-            {DISCORD_URL && <a href={DISCORD_URL} data-track="Discord" className={secondary}><DiscordMark />Join the Discord</a>}
+            <a href={GITHUB_URL} className={secondary}><GitHubMark />查看源码</a>
           </div>
         </div>
       </section>

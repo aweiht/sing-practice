@@ -20,7 +20,7 @@
   --color-good: #34d27b;
   --color-close: #f5b83d;
   --color-off: #f2626b;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-rise: rise .45s cubic-bezier(.2,.8,.2,1) both;

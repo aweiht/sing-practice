@@ -1,26 +1,25 @@
-name: Idea or feature request
-description: Something OnKey could do, or do better
+name: 功能建议
+description: 提出随声练可以增加或改进的功能
 labels: ["idea"]
 body:
   - type: markdown
     attributes:
       value: |
-        For Windows or Linux, please add a thumbs-up reaction to the pinned "Want OnKey on Windows/Linux?" issue instead of
-        opening a new one.
+        请先搜索现有 Issues，避免重复提交。此项目目前聚焦 Mac 版本，中文歌词对齐和 Shazam 新歌识别能力尚未验证。
   - type: textarea
     id: problem
     attributes:
-      label: What are you trying to do?
-      description: The situation, and what gets in the way today.
+      label: 你想完成什么？
+      description: 请描述使用场景，以及目前遇到的阻碍。
     validations:
       required: true
   - type: textarea
     id: idea
     attributes:
-      label: What would help?
-      description: Your idea, if you have one. Rough is fine.
+      label: 什么改进会有帮助？
+      description: 请描述你的想法，草稿也可以。
   - type: input
     id: setup
     attributes:
-      label: Your setup (optional)
-      description: Music app, output device, Mac, if it matters for this.
+      label: 使用环境（可选）
+      description: 如果与具体环境有关，请填写播放器、音频设备和 Mac 型号。

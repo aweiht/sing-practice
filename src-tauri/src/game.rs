@@ -71,7 +71,7 @@ impl Game {
             }
         }
         if tried > 0 && failed == tried {
-            return Err("every piece failed".into());
+            return Err("所有片段都无法分析".into());
         }
         Ok(out)
     }

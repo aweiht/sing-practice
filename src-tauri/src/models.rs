@@ -1,4 +1,4 @@
-//! The large models OnKey needs to learn songs ship inside the app (Contents/Resources/models, about 380 MB),
+//! The large models 随声练 needs to learn songs ship inside the app (Contents/Resources/models, about 380 MB),
 //! and only there: nothing is downloaded. At launch each one is checked to be there at its full size; a set that
 //! isn't (a damaged install) means new songs can't be learned, and the window says so and suggests reinstalling.
 //! The SHA-256s are checked on the built app before it ships (scripts/check-release.sh reads them from here).
@@ -47,8 +47,8 @@ pub fn state() -> serde_json::Value {
 pub fn check(dir: &Path) -> Result<(), String> {
     let bad: Vec<String> = MODELS.iter().filter_map(|m| match std::fs::metadata(dir.join(m.file)) {
         Ok(md) if md.len() == m.bytes => None,
-        Ok(md) => Some(format!("{} is {} bytes, not {}", m.file, md.len(), m.bytes)),
-        Err(_) => Some(format!("{} isn't there", m.file)),
+        Ok(md) => Some(format!("{} 大小为 {} 字节，应为 {} 字节", m.file, md.len(), m.bytes)),
+        Err(_) => Some(format!("缺少文件 {}", m.file)),
     }).collect();
     if bad.is_empty() { Ok(()) } else { Err(bad.join("; ")) }
 }
@@ -90,7 +90,7 @@ mod tests {
         std::fs::File::create(dir.join("game/encoder.onnx")).unwrap().set_len(10).unwrap();
         std::fs::remove_file(dir.join("crepe-full-b32.onnx")).unwrap();
         let e = check(&dir).unwrap_err();
-        assert!(e.contains("crepe-full-b32.onnx isn't there") && e.contains("game/encoder.onnx is 10 bytes"), "{e}");
+        assert!(e.contains("缺少文件 crepe-full-b32.onnx") && e.contains("game/encoder.onnx 大小为 10 字节"), "{e}");
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

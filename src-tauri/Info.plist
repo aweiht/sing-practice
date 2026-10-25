@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
   <key>NSMicrophoneUsageDescription</key>
-  <string>OnKey listens to your singing to show how in tune you are. Your recordings stay on your Mac.</string>
+  <string>随声练需要使用麦克风录下你的歌声，以便显示音准。录音保存在这台 Mac 上。</string>
   <key>NSAudioCaptureUsageDescription</key>
-  <string>OnKey listens to the music playing on your Mac to learn the singer's melody. It never saves the music or sends it. In listening mode a short fingerprint of it (not the audio) goes to Apple's Shazam to name the song.</string>
+  <string>随声练需要捕获这台 Mac 正在播放的音乐，以学习歌曲旋律。不会保存或发送原始音乐；仅在聆听模式使用 Shazam 匹配歌曲时，才会向 Apple 发送短音频指纹。</string>
   <key>NSAppleEventsUsageDescription</key>
-  <string>OnKey asks Spotify, Music or your browser (for YouTube) what's playing and controls playback when you press play, skip or start over.</string>
+  <string>随声练会查询 Spotify、音乐或浏览器（YouTube）的播放状态，并在你操作播放、跳过或重唱时控制播放。</string>
 </dict>
 </plist>

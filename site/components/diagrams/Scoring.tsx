@@ -13,12 +13,12 @@ export const coverageFactor = (c: number, full = 0.4) => 0.3 * Math.min(1, c / 0
 const grade = (cents: number) => (Math.abs(cents) <= 50 ? "var(--good)" : Math.abs(cents) <= 100 ? "var(--close)" : "var(--off)");
 
 export const SCORE_STEPS = [
-  "Every 10 ms, your pitch is compared with the singer's",
-  "Within half a semitone is full credit",
-  "An octave up or down counts as on the note",
-  "A little early or late isn't punished",
-  "Each note: hit if you held it for half its length",
-  "The score: your accuracy, scaled by how much you sang",
+  "每 10 毫秒将你的音高与原唱比较",
+  "音高误差在半个半音内可得满分",
+  "高低八度会折算为同一个音",
+  "轻微早唱或晚唱不会直接扣分",
+  "音符保持半段时长即可计为命中",
+  "总分由音准与演唱覆盖比例共同决定",
 ];
 
 const X0 = 34, XW = 412, ROW = 17, BASE = 226;
@@ -40,7 +40,7 @@ export function ScoreDiagram({ step = 5 }: { step?: number }) {
   const hitNotes = [true, true, false, true, true, true, true];
   const acc = 0.86, sang = 0.8, score = Math.round(100 * acc * coverageFactor(sang));
   return (
-    <Frame label="How OnKey scores your singing" caption={SCORE_STEPS[step]}>
+    <Frame label="随声练如何计算演唱评分" caption={SCORE_STEPS[step]}>
       {Array.from({ length: 10 }, (_, i) => (
         <rect key={i} x={X0} y={BASE - (i + 1) * ROW} width={XW} height={ROW} fill={i % 2 ? "var(--panel)" : "transparent"} opacity="0.6" />
       ))}
@@ -55,23 +55,23 @@ export function ScoreDiagram({ step = 5 }: { step?: number }) {
       {step === 1 && (
         <g>
           <rect x={x(0.9)} y={y(7) - ROW * 1.5} width={x(1.5) - x(0.9)} height={ROW * 3} fill="none" stroke="var(--close)" strokeDasharray="3 3" />
-          <text x={x(1.2)} y={y(7) - ROW * 1.8} textAnchor="middle" fontSize="11" fill="var(--close)">60 cents flat: 90% credit</text>
+          <text x={x(1.2)} y={y(7) - ROW * 1.8} textAnchor="middle" fontSize="11" fill="var(--close)">偏低 60 音分：得分 90%</text>
         </g>
       )}
-      {step === 2 && <text x={X0 + XW} y="40" textAnchor="end" fontSize="11" fill="var(--good)">an octave lower: still green</text>}
-      {step === 3 && <text x={x(2.2)} y={y(4) - 26} textAnchor="middle" fontSize="11" fill="var(--good)">up to 80 ms off: allowed</text>}
+      {step === 2 && <text x={X0 + XW} y="40" textAnchor="end" fontSize="11" fill="var(--good)">低一个八度仍可命中</text>}
+      {step === 3 && <text x={x(2.2)} y={y(4) - 26} textAnchor="middle" fontSize="11" fill="var(--good)">允许 ±80 毫秒时差</text>}
       {step === 5 && (
         <g>
           <rect x="300" y="28" width="160" height="58" rx="12" fill="var(--panel)" stroke="var(--score)" />
           <text x="380" y="62" textAnchor="middle" fontSize="26" fontWeight="700" fill="var(--score)">{score}</text>
-          <text x="380" y="78" textAnchor="middle" fontSize="10.5" fill="var(--muted)">86% accurate · sang 80%</text>
+          <text x="380" y="78" textAnchor="middle" fontSize="10.5" fill="var(--muted)">音准 86% · 演唱覆盖 80%</text>
         </g>
       )}
     </Frame>
   );
 }
 
-/** Drag your note up or down (or use the slider) and see the credit it would earn. */
+/** 可拖动音高曲线，也可使用下方滑块查看对应得分。 */
 export function CreditPlayground() {
   const [cents, setCents] = useState(60);
   const [octave, setOctave] = useState(false);
@@ -89,9 +89,9 @@ export function CreditPlayground() {
   const curve = Array.from({ length: 121 }, (_, i) => -300 + i * 5).map((v, i) => `${i ? "L" : "M"}${cx(v)},${cy(credit(v))}`).join(" ");
   return (
     <div className="wide rounded-2xl border border-line bg-bg-raised px-2 py-4 sm:p-4">
-      <p className="!mt-0 text-sm font-medium text-fg">Try it: how far off can you be?</p>
+      <p className="!mt-0 text-sm font-medium text-fg">试一试：音高偏差如何影响得分？</p>
       <svg ref={svg} viewBox={`0 0 ${CW} ${CH}`} className="dg mt-2 block h-auto w-full touch-none select-none" onPointerDown={drag} onPointerMove={drag}
-        role="img" aria-label={`Credit curve. Your note is ${Math.abs(cents)} cents ${cents < 0 ? "flat" : "sharp"}, earning ${Math.round(c * 100)}% credit.`}>
+        role="img" aria-label={`评分曲线：当前音高${cents === 0 ? "准确" : `偏${cents < 0 ? "低" : "高"} ${Math.abs(cents)} 音分`}，得分 ${Math.round(c * 100)}%。`}>
         <rect x="40" y="40" width="400" height="140" fill="var(--panel)" />
         <rect x={cx(-50)} y="40" width={cx(50) - cx(-50)} height="140" fill="var(--good)" opacity="0.12" />
         {[-300, -150, -50, 0, 50, 150, 300].map((v) => (
@@ -100,30 +100,30 @@ export function CreditPlayground() {
             <text x={cx(v)} y="198" textAnchor="middle" fontSize="11" fill="var(--muted)">{v > 0 ? `+${v}` : v}</text>
           </g>
         ))}
-        <text x="240" y="216" textAnchor="middle" fontSize="11" fill="var(--faint)">cents from the note (100 cents = 1 semitone)</text>
+        <text x="240" y="216" textAnchor="middle" fontSize="11" fill="var(--faint)">与目标音的偏差（100 音分 = 1 个半音）</text>
         <text x="34" y="44" textAnchor="end" fontSize="11" fill="var(--muted)">100%</text>
         <text x="34" y="184" textAnchor="end" fontSize="11" fill="var(--muted)">0</text>
         <path d={curve} fill="none" stroke="var(--score)" strokeWidth="2.5" />
         <line x1={cx(cents)} x2={cx(cents)} y1="30" y2="180" stroke={grade(fold(shown))} strokeWidth="2" />
         <circle cx={cx(cents)} cy={cy(c)} r="9" fill={grade(fold(shown))} stroke="var(--bg-raised)" strokeWidth="3" style={{ cursor: "ew-resize" }} />
-        <text x={cx(cents)} y="22" textAnchor="middle" fontSize="13" fontWeight="600" fill="var(--fg)">{Math.round(c * 100)}% credit</text>
+        <text x={cx(cents)} y="22" textAnchor="middle" fontSize="13" fontWeight="600" fill="var(--fg)">得分 {Math.round(c * 100)}%</text>
       </svg>
       <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted">
         <label htmlFor={`${id}-c`} className="flex items-center gap-3">
-          Your note
+          当前音高
           <input id={`${id}-c`} type="range" min={-300} max={300} step={5} value={cents} onChange={(e) => setCents(Number(e.target.value))} className="w-40 accent-[var(--accent)]" />
-          <span className="tabular w-24 text-fg">{cents === 0 ? "on the note" : `${Math.abs(cents)}¢ ${cents < 0 ? "flat" : "sharp"}`}</span>
+          <span className="tabular w-24 text-fg">{cents === 0 ? "音高准确" : `${Math.abs(cents)} 音分偏${cents < 0 ? "低" : "高"}`}</span>
         </label>
         <label htmlFor={`${id}-o`} className="flex items-center gap-2">
           <input id={`${id}-o`} type="checkbox" checked={octave} onChange={(e) => setOctave(e.target.checked)} className="accent-[var(--accent)]" />
-          Sing it an octave lower
+          低一个八度演唱
         </label>
       </div>
     </div>
   );
 }
 
-/** Slide how much of the singer's part you sang, and see what it does to a take at 86% accuracy. */
+/** 拖动演唱覆盖比例，查看音准为 86% 时的总分变化。 */
 export function CoveragePlayground() {
   const [sang, setSang] = useState(0.5);
   const id = useId();
@@ -132,8 +132,8 @@ export function CoveragePlayground() {
   const line = (full: number) => Array.from({ length: 101 }, (_, i) => i / 100).map((v, i) => `${i ? "L" : "M"}${cx(v)},${cy(coverageFactor(v, full))}`).join(" ");
   return (
     <div className="wide rounded-2xl border border-line bg-bg-raised px-2 py-4 sm:p-4">
-      <p className="!mt-0 text-sm font-medium text-fg">Try it: how much of the song do you need to sing?</p>
-      <svg viewBox="0 0 480 210" className="dg mt-2 block h-auto w-full" role="img" aria-label={`Singing ${Math.round(sang * 100)}% of the singer's part at 86% accuracy scores ${Math.round(100 * acc * coverageFactor(sang))}.`}>
+      <p className="!mt-0 text-sm font-medium text-fg">试一试：演唱多少比例会影响总分？</p>
+      <svg viewBox="0 0 480 210" className="dg mt-2 block h-auto w-full" role="img" aria-label={`音准 86%、演唱覆盖 ${Math.round(sang * 100)}% 时，总分为 ${Math.round(100 * acc * coverageFactor(sang))} 分。`}>
         <rect x="40" y="40" width="400" height="130" fill="var(--panel)" />
         {[0, 0.1, 0.25, 0.4, 0.6, 0.8, 1].map((v) => (
           <g key={v}>
@@ -141,13 +141,13 @@ export function CoveragePlayground() {
             <text x={cx(v)} y="188" textAnchor="middle" fontSize="11" fill="var(--muted)">{Math.round(v * 100)}%</text>
           </g>
         ))}
-        <text x="240" y="205" textAnchor="middle" fontSize="11" fill="var(--faint)">share of the singer's part you sang</text>
+        <text x="240" y="205" textAnchor="middle" fontSize="11" fill="var(--faint)">你演唱的原唱部分比例</text>
         <path d={line(0.4)} fill="none" stroke="var(--score)" strokeWidth="2.5" />
         <circle cx={cx(sang)} cy={cy(coverageFactor(sang))} r="8" fill="var(--score)" stroke="var(--bg-raised)" strokeWidth="3" />
-        <text x="440" y="30" textAnchor="end" fontSize="13" fontWeight="600" fill="var(--fg)">score {Math.round(100 * acc * coverageFactor(sang))} at 86% accuracy</text>
+        <text x="440" y="30" textAnchor="end" fontSize="13" fontWeight="600" fill="var(--fg)">音准 86% 时得 {Math.round(100 * acc * coverageFactor(sang))} 分</text>
       </svg>
       <label htmlFor={`${id}-s`} className="mt-3 flex items-center gap-3 text-sm text-muted">
-        You sang
+        演唱覆盖
         <input id={`${id}-s`} type="range" min={0} max={1} step={0.01} value={sang} onChange={(e) => setSang(Number(e.target.value))} className="w-48 accent-[var(--accent)]" />
         <span className="tabular text-fg">{Math.round(sang * 100)}%</span>
       </label>

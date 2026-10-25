@@ -1,10 +1,10 @@
 [package]
 name = "onkey"
 version = "0.1.0"
-description = "Sing along and see how in tune you are"
-authors = ["OnKey contributors"]
+description = "跟着喜欢的歌曲练唱，查看音准"
+authors = ["随声练 contributors"]
 license = "MIT"
-repository = "https://github.com/dsmurrell/onkey"
+repository = "https://github.com/aweiht/sing-practice"
 edition = "2021"
 rust-version = "1.77.2"
 
@@ -34,8 +34,6 @@ libc = "0.2"
 # already in the tree (via tauri); used directly to zip a problem report (report.rs)
 flate2 = "1"
 crc32fast = "1"
-# updates from GitHub Releases (latest.json, checked against the public key in tauri.conf.json): updater.rs
-tauri-plugin-updater = { version = "2.12", default-features = false, features = ["native-tls"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 # already in the tree via tauri/tao; used directly to hide the window buttons in mini mode

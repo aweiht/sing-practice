@@ -4,12 +4,12 @@ import { ease, useClock } from "@/components/explain/motion";
 import { DUR, PHRASE, singerPitch, waveform } from "./song";
 
 export const LEARN_STEPS = [
-  "The song arrives: music and singer mixed",
-  "Separation picks out the singer's voice, in memory",
-  "Pitch tracking follows the singer, every 10 ms",
-  "Each held pitch becomes a note bar",
-  "Lyric lines move to where the words are heard",
-  "One bar per syllable: ready to sing",
+  "歌曲进入应用时，伴奏与人声混合在一起",
+  "在内存中分离出歌手人声",
+  "每 10 毫秒追踪一次歌手音高",
+  "把持续音高转换为音符条",
+  "根据演唱时间调整歌词行位置",
+  "每个音节对应一个音符条",
 ];
 
 const MIX = waveform(160, "mix", 5), VOC = waveform(160, "vocal", 7), BACK = waveform(160, "backing", 11);
@@ -35,7 +35,7 @@ export function Learning({ step = 5 }: { step?: number }) {
   const lane = step >= 2;
 
   return (
-    <Frame label="How OnKey learns a song" caption={LEARN_STEPS[step]}>
+    <Frame label="随声练如何学习歌曲" caption={LEARN_STEPS[step]}>
       {/* the lane's rows, once there's a melody to put on it */}
       {lane && Array.from({ length: 10 }, (_, i) => (
         <rect key={i} x={X0} y={BASE - (i + 1) * ROW} width={XW} height={ROW} fill={i % 2 ? "var(--panel)" : "transparent"} opacity="0.6" />
@@ -47,10 +47,10 @@ export function Learning({ step = 5 }: { step?: number }) {
           <g opacity={split}>
             <path d={wavePath(VOC, X0, 150 - 62 * split, XW, 30)} fill="none" stroke="var(--singer)" strokeWidth="1.3" />
             <path d={wavePath(BACK, X0, 150 + 62 * split, XW, 24)} fill="none" stroke="var(--music)" strokeWidth="1.1" opacity="0.7" />
-            <text x={X0} y={150 - 62 * split - 38} fontSize="11.5" fill="var(--singer)">the singer</text>
-            <text x={X0} y={150 + 62 * split + 38} fontSize="11.5" fill="var(--music)">everything else</text>
+            <text x={X0} y={150 - 62 * split - 38} fontSize="11.5" fill="var(--singer)">歌手人声</text>
+            <text x={X0} y={150 + 62 * split + 38} fontSize="11.5" fill="var(--music)">伴奏等其他声音</text>
           </g>
-          {step === 0 && <text x={X0} y="104" fontSize="11.5" fill="var(--music)">the mix</text>}
+          {step === 0 && <text x={X0} y="104" fontSize="11.5" fill="var(--music)">混合后的声音</text>}
         </>
       )}
       {/* step 2+: the singer's pitch line */}
@@ -69,7 +69,7 @@ export function Learning({ step = 5 }: { step?: number }) {
             fill={step >= 5 ? "var(--fg-soft)" : "var(--singer)"} opacity={step === 4 ? 0.5 + 0.5 * settle : 1}>{w}</text>
         );
       })}
-      {step === 4 && <text x={X0 + XW} y="268" textAnchor="end" fontSize="10.5" fill="var(--faint)">timing from the lyric file, corrected by ear</text>}
+      {step === 4 && <text x={X0 + XW} y="268" textAnchor="end" fontSize="10.5" fill="var(--faint)">歌词时间初值，再根据声音调整</text>}
     </Frame>
   );
 }

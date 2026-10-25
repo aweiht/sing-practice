@@ -1,99 +1,52 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { DOWNLOAD_URL, LAUNCH, REQUIREMENTS } from "@/lib/site";
+import { GITHUB_URL, REQUIREMENTS, codeUrl } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Getting started" };
+export const metadata: Metadata = { title: "源码构建指南" };
 
 export default function GettingStarted() {
   return (
     <>
-      <h1>Getting started</h1>
-      <p className="lede">Install OnKey, give it two permissions, and play a song.</p>
+      <h1>源码构建指南</h1>
+      <p className="lede">随声练目前没有中文版发布安装包，也没有已部署的官网。本页介绍如何从公开源码构建 Mac 应用。</p>
 
-      <h2>What you need</h2>
+      <h2>构建应用前需要准备</h2>
       <ul>
         {REQUIREMENTS.map((r) => <li key={r}>{r}</li>)}
-        <li>Music playing in Spotify or Apple Music, or YouTube in Chrome, Brave, Edge, or Safari.</li>
-        <li>A microphone (the built-in one works). Headphones give the most reliable scores.</li>
+        <li>安装 Xcode Command Line Tools、Rust、Node.js 和 Python 3。</li>
+        <li>需要联网下载并校验随应用分发的机器学习模型；模型文件不会提交到仓库。</li>
       </ul>
+
+      <h2>构建 Mac 应用</h2>
+      <p>先克隆项目并安装 JavaScript 依赖，再准备模型并调用 Tauri 构建：</p>
+      <pre><code>{`git clone ${GITHUB_URL}.git
+cd sing-practice
+npm ci
+npm --prefix ui ci
+python3 -m venv .venv
+.venv/bin/pip install -r scripts/requirements-models.txt
+PYTHON=.venv/bin/python scripts/fetch-models.sh
+npx tauri build`}</code></pre>
       <p>
-        macOS 14.2 is the first version that lets one app hear another app's sound without extra drivers, and the
-        models need Apple Silicon to run fast enough.
+        模型下载脚本会校验文件 SHA-256。模型、Python 依赖和 Rust 编译会占用较多磁盘空间与网络流量；具体输出位置由本机 Tauri 配置决定。
+        从源码构建不等于获得已签名的安装包：本项目没有自有 Apple Developer ID 证书与公证配置，首次打开时 macOS 可能阻止运行。
+      </p>
+      <p>
+        项目没有配置本版的 Shazam Developer ID，因此 Shazam 新歌识别能力尚未验证，可能不可用。中文歌词对齐模型也未经过验证；其他歌曲分析能力沿用上游实现。
       </p>
 
-      <h2>Install</h2>
-      <ol>
-        <li>
-          Download <code>OnKey.dmg</code> from the <a href={DOWNLOAD_URL} data-track="Download for Mac">releases page</a>. It&rsquo;s about 350 MB
-          (about 420 MB installed) because the models come inside the app, so it never downloads anything else.
-        </li>
-        <li>Open it and drag OnKey into Applications.</li>
-        {LAUNCH.notarised ? (
-          <li>Open OnKey. It's signed and notarised by Apple, so it opens like any other app.</li>
-        ) : (
-          <li>
-            Open OnKey. This build isn't notarised yet, so macOS says it can't check the app the first time.
-            Go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down, and click <strong>Open
-            Anyway</strong>. You only need to do this once.
-          </li>
-        )}
-      </ol>
-      <p>
-        After that, OnKey checks GitHub for a new version once a day, downloads it in the background (about 350 MB),
-        and installs it when you restart or quit, never mid-song. You can turn this off in <strong>Settings</strong>.
-      </p>
+      <h2>构建网站文档</h2>
+      <p>网站代码位于 <code>site/</code>，单独安装依赖并生成静态文件：</p>
+      <pre><code>{`npm --prefix site ci
+npm --prefix site run build`}</code></pre>
+      <p>构建结果写入 <code>site/out/</code>。当前只提供源码构建说明，没有官网域名或网站部署。</p>
 
-      <h2>Permissions</h2>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Permission</th><th>Why OnKey needs it</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Microphone</strong></td><td>To hear you sing.</td></tr>
-            <tr><td><strong>System audio recording</strong></td><td>To hear the music app, so OnKey can learn the melody and keep the notes in time. macOS calls it recording, but OnKey analyses the sound as it plays and never saves it.</td></tr>
-            <tr><td><strong>Control Spotify and Music</strong> (asked in setup)</td><td>To read what's playing and where, and to play, pause, and seek for "Sing it again" and skipping. Setup asks macOS for each app that's open. An app that isn't open asks the first time you play a song in it. Choose "Listen only" and OnKey never sends Spotify or Music anything, and follows the song by its sound.</td></tr>
-            <tr><td><strong>Control your browser</strong> (optional, for YouTube)</td><td>Only if you turn YouTube on, in Settings or on the Sing page: to read the YouTube tab's time and title, and play, pause, and seek it.</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <h2>源代码与许可</h2>
       <p>
-        Songs you've sung before are recognised on your Mac, new ones by Shazam. If you said no to a permission by
-        mistake, go to <strong>System Settings → Privacy &amp; Security</strong>, find the section, and switch OnKey on.
-      </p>
-
-      <h2>Your first song</h2>
-      <ol>
-        <li>
-          Open OnKey and play a song in Spotify, Apple Music, or YouTube. Not sure what to sing? Click the OnKey logo
-          on the Sing page for suggestions.
-        </li>
-        <li>
-          The first time, there are no notes yet. You see the lyrics a line at a time, in time with the singer for the
-          first minute and a half or so (except on 8 GB Macs). Sing along if you like, as this take is still scored.
-        </li>
-        <li>
-          When the song ends, OnKey <strong>learns it</strong>. That took two to three minutes on my Mac, and the Sing
-          button says "Learning…" until it's done. One song is learned at a time, so songs played back to back
-          say "Waiting to learn" until their turn.
-        </li>
-        <li>
-          Play it again. The notes stay dimmed ("Lining up with the song…") for a few seconds until OnKey knows where
-          you are. Then they scroll towards you with the words on them, and your pitch is drawn live.
-        </li>
-        <li>
-          When it ends, you get a score, a report on every note and line, and your recording to play back with the song.
-        </li>
-      </ol>
-      <p className="callout">
-        A song counts as learned once OnKey has heard about 70% of it. If you skip around, the rest is learned the
-        next time you play those parts.
-      </p>
-      <p>
-        Singing a lot? Have a read of <Link href="/docs/your-voice/">singing comfortably</Link>. After about 35 minutes,
-        OnKey reminds you to rest your voice.
-      </p>
-      <p>
-        Next: <Link href="/docs/how-it-works/">how OnKey works</Link>, <Link href="/docs/scoring/">how the score works</Link>,
-        or <Link href="/docs/troubleshooting/">troubleshooting</Link>.
+        <a href={GITHUB_URL}>查看随声练源码仓库</a>。本项目改编自 Daniel Murrell 的
+        <a href="https://github.com/dsmurrell/onkey"> dsmurrell/onkey（OnKey）</a>，保留 MIT 许可与上游署名。
+        模型和其他第三方组件各自遵循其许可；完整文本见
+        <a href={codeUrl("THIRD_PARTY_NOTICES.md")}> THIRD_PARTY_NOTICES.md</a> 与
+        <a href="/docs/credits/">致谢与许可</a>。
       </p>
     </>
   );

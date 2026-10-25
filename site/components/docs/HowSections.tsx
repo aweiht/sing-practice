@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Levels } from "@/components/explain/Levels";
 import { Scrolly } from "@/components/explain/Scrolly";
 import { Glyph } from "@/components/explain/Glyph";
-import { codeUrl } from "@/lib/site";
+import { codeUrl, DATA_DIR } from "@/lib/site";
 import { BIG_STEPS, BigPicture } from "@/components/diagrams/BigPicture";
 import { HEAR_STEPS, Hearing } from "@/components/diagrams/Hearing";
 import { LEARN_STEPS, Learning } from "@/components/diagrams/Learning";
@@ -12,13 +12,12 @@ import { ECHO_STEPS, Echo } from "@/components/diagrams/Echo";
 import { CoveragePlayground, CreditPlayground, SCORE_STEPS, ScoreDiagram } from "@/components/diagrams/Scoring";
 import { PRIVACY_STEPS, Privacy } from "@/components/diagrams/Privacy";
 
-
-/** A link to a source file, for "Under the hood". */
+/** 源码链接：用于查看对应实现。 */
 function Code({ path, children }: { path: string; children?: React.ReactNode }) {
   return <a href={codeUrl(path)}><code>{children ?? path.split("/").pop()}</code></a>;
 }
 
-/** "Under the hood": the exact facts, with where they live in the code. */
+/** 代码细节列表。 */
 function Hood({ children }: { children: React.ReactNode }) {
   return <ul className="!mt-0 max-w-[65ch]">{children}</ul>;
 }
@@ -31,165 +30,152 @@ export function HowSections() {
   return (
     <>
       <Levels
-        id="big-picture" title="1. The big picture"
+        id="big-picture" title="1. 整体流程"
         how={
-          <Scrolly label="How OnKey works, end to end" diagram={(s) => <BigPicture step={s} />} steps={[
-            <S key={0} title={BIG_STEPS[0]}>You play music the way you already do, in <strong>Spotify, Apple Music, or YouTube</strong>. OnKey doesn't play anything itself.</S>,
-            <S key={1} title={BIG_STEPS[1]}>OnKey <strong>hears the music app</strong> <Glyph kind="wave" /> through macOS. The sound is analysed as it plays and never saved.</S>,
-            <S key={2} title={BIG_STEPS[2]}>After a song's first play, OnKey <strong>learns it</strong>: it pulls out the singer's voice <Glyph kind="separate" />, works out the notes, and lines up the lyrics.</S>,
-            <S key={3} title={BIG_STEPS[3]}>From the next play, you see the <strong>note bars</strong> <Glyph kind="lane" /> coming towards you, and your voice <Glyph kind="mic" /> drawn on top.</S>,
-            <S key={4} title={BIG_STEPS[4]}>When the song ends you get a <strong>score</strong> <Glyph kind="score" /> and a report on each line, and whether you tend to sing sharp or flat.</S>,
+          <Scrolly label="随声练的完整工作流程" diagram={(s) => <BigPicture step={s} />} steps={[
+            <S key={0} title={BIG_STEPS[0]}>你照常在 <strong>Spotify、Apple Music 或 YouTube</strong> 播放音乐，随声练不会替你播放歌曲。</S>,
+            <S key={1} title={BIG_STEPS[1]}>应用通过 macOS <strong>采集音乐播放器的声音</strong> <Glyph kind="wave" />，边播放边分析，不会保存音乐音频。</S>,
+            <S key={2} title={BIG_STEPS[2]}>首次播放后，应用会学习歌手音高 <Glyph kind="separate" />、生成音符并尝试对齐歌词。</S>,
+            <S key={3} title={BIG_STEPS[3]}>再次播放时，音符条 <Glyph kind="lane" /> 会随歌曲进度移动，麦克风采集到的音高 <Glyph kind="mic" /> 叠加显示。</S>,
+            <S key={4} title={BIG_STEPS[4]}>歌曲结束后可查看 <strong>评分</strong> <Glyph kind="score" />、音符和逐行练习报告。</S>,
           ]} />
         }
         hood={
           <Hood>
-            <li>A Mac app: a Rust engine (audio, models, scoring) inside a Tauri window with a React interface. <Code path="src-tauri/src/engine.rs" /> runs everything.</li>
-            <li>Everything happens on your Mac. Models run with ONNX Runtime, on Core ML (GPU and Neural Engine) where it helps.</li>
-            <li>Audio is analysed at 16 kHz in 10 ms frames, the unit every number below uses (<Code path="src-tauri/src/dsp.rs" />, <code>FRAME_S</code>).</li>
-            <li>A song counts as learned once 70% of it has been heard (<code>READY_COVERAGE</code> in <Code path="src-tauri/src/store.rs" />). A partly heard song keeps learning on later plays.</li>
+            <li>这是一个 Mac 桌面应用：Rust 负责音频、模型和评分，Tauri 承载 React 界面。入口位于 <Code path="src-tauri/src/engine.rs" />。</li>
+            <li>模型在本机运行，使用 ONNX Runtime；符合条件时也会使用 Core ML。音频重采样到 16 kHz，并以 10 毫秒为一帧（<Code path="src-tauri/src/dsp.rs" />）。</li>
+            <li>歌曲听取覆盖率达到 70% 后记为已学习，具体阈值在 <Code path="src-tauri/src/store.rs">store.rs</Code> 的 <code>READY_COVERAGE</code> 中。</li>
           </Hood>
         }
       />
 
       <Levels
-        id="hearing" title="2. Hearing the music"
+        id="hearing" title="2. 采集音乐与麦克风"
         how={
-          <Scrolly label="How OnKey hears the music" diagram={(s) => <Hearing step={s} />} steps={[
-            <S key={0} title={HEAR_STEPS[0]}>Your Mac plays sound from lots of apps at once.</S>,
-            <S key={1} title={HEAR_STEPS[1]}>OnKey asks macOS (with your permission) for the sound of <strong>one app</strong>, the music app, and ignores the rest.</S>,
-            <S key={2} title={HEAR_STEPS[2]}>Your <strong>mic</strong> <Glyph kind="mic" /> is recorded alongside, on the <strong>same clock</strong>, so OnKey knows which moment of the song you sang against.</S>,
-            <S key={3} title={HEAR_STEPS[3]}>The music is analysed <strong>as it plays</strong>, in memory (a song being learned stays in memory until it ends). It's never written to disk, uploaded, or shared.</S>,
+          <Scrolly label="随声练如何采集声音" diagram={(s) => <Hearing step={s} />} steps={[
+            <S key={0} title={HEAR_STEPS[0]}>Mac 上可以同时有多个应用播放声音。</S>,
+            <S key={1} title={HEAR_STEPS[1]}>获得系统权限后，随声练只采集你正在使用的<strong>音乐应用</strong>。</S>,
+            <S key={2} title={HEAR_STEPS[2]}>麦克风与播放器声音按<strong>同一时钟</strong>采集，便于比较你在歌曲哪个时刻演唱。</S>,
+            <S key={3} title={HEAR_STEPS[3]}>音乐在播放时留在内存中分析，不写入磁盘，也不会上传或分享。</S>,
           ]} />
         }
         hood={
           <Hood>
-            <li>Capture uses Core Audio process taps (macOS 14.2+), with your mic, at your output device's own rate (usually 48 kHz), on one clock (<Code path="src-tauri/native/capture.swift" />, <Code path="src-tauri/src/capture.rs" />).</li>
-            <li>Only the processes of the music app are tapped, chosen by its bundle id (<Code path="src-tauri/src/source.rs" />).</li>
-            <li>Everything is resampled to 16 kHz mono for analysis. Release builds never write the music's audio anywhere. Only your own voice is kept with each take.</li>
-            <li>Permissions: system audio recording and the microphone. Controlling Spotify and Music (what's playing and where, "Sing it again", skip, and pause) is a separate permission, asked in setup, and "Listen only" turns it off. Controlling the YouTube tab is off until you switch it on.</li>
+            <li>系统音频使用 Core Audio process tap（macOS 14.2 及以上），麦克风与输出设备使用同一采集时钟（<Code path="src-tauri/native/capture.swift" />、<Code path="src-tauri/src/capture.rs" />）。</li>
+            <li>只选择音乐应用对应的进程采集声音（<Code path="src-tauri/src/source.rs" />）。</li>
+            <li>音频转换为 16 kHz 单声道供模型分析。音乐不会写入文件；每次练习可保存你自己的麦克风录音。</li>
+            <li>麦克风与系统音频录制是独立权限。控制 Spotify、Apple Music 或 YouTube 也是可选权限；关闭控制功能后，应用会尝试根据声音识别和定位。</li>
           </Hood>
         }
       />
 
       <Levels
-        id="learning" title="3. Learning a song"
+        id="learning" title="3. 学习歌曲"
         how={
-          <Scrolly label="How OnKey learns a song" diagram={(s) => <Learning step={s} />} steps={[
-            <S key={0} title={LEARN_STEPS[0]}>The song reaches OnKey as one sound: <strong>the singer and the band mixed together</strong>.</S>,
-            <S key={1} title={LEARN_STEPS[1]}>Once the song has ended, a <strong>separation</strong> model <Glyph kind="separate" /> pulls the lead singer out of the mix, a chunk at a time. (Doing this while you sing would make the notes stutter.)</S>,
-            <S key={2} title={LEARN_STEPS[2]}>A <strong>pitch tracker</strong> follows the singer's voice <strong>every 10 ms</strong>. That gives a wiggly line with the exact tune, slides and vibrato included.</S>,
-            <S key={3} title={LEARN_STEPS[3]}>A note model turns that line into <strong>notes</strong>, with where each one starts and ends.</S>,
-            <S key={4} title={LEARN_STEPS[4]}>The <strong>lyrics</strong> come from LRCLIB with rough timings. A speech model listens to the singer and moves each line to <strong>where its words are sung</strong>. On a first play it does this for the first minute and a half or so, so those lines are in time too.</S>,
-            <S key={5} title={LEARN_STEPS[5]}>Each line is split into syllables, and each syllable gets its own <strong>bar</strong> <Glyph kind="lane" /> at its note. That's the lane you sing to.</S>,
+          <Scrolly label="随声练如何学习歌曲" diagram={(s) => <Learning step={s} />} steps={[
+            <S key={0} title={LEARN_STEPS[0]}>刚开始时，收到的是歌手与乐器混合后的完整声音。</S>,
+            <S key={1} title={LEARN_STEPS[1]}>歌曲结束后，分离模型 <Glyph kind="separate" /> 会从混合声音中提取主唱；处理时不保存音频文件。</S>,
+            <S key={2} title={LEARN_STEPS[2]}>音高跟踪器每 10 毫秒分析一次歌手声音，可保留滑音与颤音变化。</S>,
+            <S key={3} title={LEARN_STEPS[3]}>音符模型把音高变化转换成音符条，并标记每个音符的起止位置。</S>,
+            <S key={4} title={LEARN_STEPS[4]}>歌词来自 LRCLIB。应用会使用语音模型尝试调整歌词行对应的演唱时间；中文歌词对齐能力尚未验证。</S>,
+            <S key={5} title={LEARN_STEPS[5]}>歌词切分成音节后，会与对应音符条组合，供后续练习使用。</S>,
           ]} />
         }
         hood={
           <Hood>
-            <li><strong>Separation:</strong> UVR MDX-Net Karaoke 2 (ONNX, on Core ML), run on 20 s chunks with 2 s of context either side. The music is held in memory while the song plays and separated after it ends, at a low priority. One song is learned at a time. Others wait their turn ("Waiting to learn"), and learning pauses while you sing a learned song with the window showing (<Code path="src-tauri/src/learn.rs" />, <Code path="src-tauri/src/mdx.rs" />).</li>
-            <li><strong>First play:</strong> up to its first 90 s are separated as they play, 5 s at a time, until the lyric lines are lined up with the singer. The rest waits for the song to end. This is skipped on 8 GB Macs and while another song is being learned. Across my library, 60% of first-play lines were within 0.3 s of the singing this way, against 13% at LRCLIB's own times.</li>
-            <li><strong>Memory:</strong> with 8 GB, one model is loaded at a time and unloaded after its step. Below 32 GB, the learning models (about 1.5 GB) are unloaded once a song is learned, unless Settings → Keep learning models ready is on (<Code path="src-tauri/src/lowmem.rs" />).</li>
-            <li><strong>Pitch:</strong> CREPE "full" on the separated vocal, 16 kHz, 10 ms hop, 1024-sample windows, 50 to 1100 Hz. A frame counts as sung when its confidence is over 0.45 (<Code path="src-tauri/src/pitch.rs" />).</li>
-            <li><strong>Notes:</strong> GAME (OpenVPI) transcribes notes from the vocal. Each syllable bar takes its note, and bars with no sung note under them are dropped (<Code path="src-tauri/src/game.rs" />, <Code path="src-tauri/src/syllables.rs" />).</li>
-            <li><strong>Lyrics:</strong> synced lyrics from LRCLIB (looked up by artist, title, album, and length, then by name if that finds nothing). Lines are re-placed by aligning the whole song's words with wav2vec 2.0 (CTC), and split into syllables with the CMU pronouncing dictionary (<Code path="src-tauri/src/lyrics.rs" />, <Code path="src-tauri/src/ctc.rs" />).</li>
-            <li><strong>Measured:</strong> on 18 hand-marked songs, 98% of sung notes are covered by a bar, 92% on the right note, and 73% starting within 0.1 s. 94% of lyric lines are within 0.3 s.</li>
-            <li><strong>Kept with the song:</strong> the pitch line, the bars, a rhythm fingerprint, a Shazam signature and the lyrics' timing, plus the LRCLIB entry those times were made for (kept on the Mac, never uploaded), so the same words show on the same bars every play. The music and the separated vocal aren't kept.</li>
+            <li><strong>人声分离：</strong>使用 UVR MDX-Net Karaoke 2 模型，每次处理 20 秒片段，并保留两侧各 2 秒上下文（<Code path="src-tauri/src/learn.rs" />、<Code path="src-tauri/src/mdx.rs" />）。</li>
+            <li><strong>音高：</strong>使用 CREPE full 模型分析分离后的人声，采样率 16 kHz，时间步长 10 毫秒，范围约 50–1100 Hz（<Code path="src-tauri/src/pitch.rs" />）。</li>
+            <li><strong>音符：</strong>GAME 模型从人声提取音符，再将音符与歌词音节对应（<Code path="src-tauri/src/game.rs" />、<Code path="src-tauri/src/syllables.rs" />）。</li>
+            <li><strong>歌词：</strong>使用 wav2vec 2.0（CTC）重新定位整首歌的歌词行，再通过 CMU 发音词典切分音节（<Code path="src-tauri/src/lyrics.rs" />、<Code path="src-tauri/src/ctc.rs" />）。中文歌词对齐尚未验证。</li>
+            <li><strong>上游版本的人工标注结果：</strong>18 首歌曲的音符覆盖率为 98%，正确音高为 92%，起始时间在 0.1 秒内的比例为 73%；歌词行在 0.3 秒内的比例为 94%。这些数据不是随声练版本的复测结果。</li>
           </Hood>
         }
       />
 
       <Levels
-        id="placement" title="4. Knowing where you are"
+        id="placement" title="4. 定位歌曲进度"
         how={
-          <Scrolly label="How OnKey finds your place in the song" diagram={(s) => <Placement step={s} />} steps={[
-            <S key={0} title={PLACE_STEPS[0]}>When a song is learned, OnKey also keeps a <strong>fingerprint</strong> <Glyph kind="fingerprint" />: how much the sound changes in each band of frequencies, every 10 ms.</S>,
-            <S key={1} title={PLACE_STEPS[1]}>Music apps only roughly report where the song is, so OnKey slides <strong>a few seconds of what it's hearing</strong> along the fingerprint.</S>,
-            <S key={2} title={PLACE_STEPS[2]}>Where they fit is <strong>exactly where you are</strong>. Until then the notes are dimmed ("Lining up with the song…"). They usually light up a few seconds into the song.</S>,
-            <S key={3} title={PLACE_STEPS[3]}>Skip, seek, or restart, and it <strong>finds you again</strong> within a few seconds. OnKey keeps a few possible places in mind and only moves the notes when the music clearly agrees.</S>,
-            <S key={4} title={PLACE_STEPS[4]}>This is <strong>listening mode</strong>. Songs you've sung before are recognised on your Mac, and Shazam names new ones, so OnKey can follow the music without controlling the app. Control of Spotify and Apple Music gives exact positions and is on by default ("Listen only" turns it off). YouTube control is opt-in.</S>,
+          <Scrolly label="随声练如何定位歌曲进度" diagram={(s) => <Placement step={s} />} steps={[
+            <S key={0} title={PLACE_STEPS[0]}>每首已学习歌曲会保存一份<strong>声音指纹</strong> <Glyph kind="fingerprint" />，记录不同频段声音随时间的变化。</S>,
+            <S key={1} title={PLACE_STEPS[1]}>应用把正在播放的几秒声音与这份指纹进行匹配。</S>,
+            <S key={2} title={PLACE_STEPS[2]}>匹配结果用于估算歌曲当前位置；完成定位前，音符会保持变暗。</S>,
+            <S key={3} title={PLACE_STEPS[3]}>你跳转、快进或重新播放后，应用会重新寻找匹配位置。</S>,
+            <S key={4} title={PLACE_STEPS[4]}>已学习歌曲可在本机识别。Shazam 新歌识别需要自有开发者标识；随声练尚未配置，该能力尚未验证。</S>,
           ]} />
         }
         hood={
           <Hood>
-            <li><strong>Fingerprint:</strong> how much the sound rises in each of 8 bands from about 60 Hz to 7 kHz, every 10 ms (<code>FP_BANDS</code> in <Code path="src-tauri/src/dsp.rs" />).</li>
-            <li><strong>Placement:</strong> one tracker places every play (<Code path="src-tauri/src/tracker.rs" />, after Arzt and Widmer's "any-time" music tracker). Each check matches the last few seconds of music, at most 8 s, against the fingerprint, to within a 10 ms frame, and keeps the best few places as weighted candidates, so a repetitive intro that matches a beat off doesn't fool it. The music app's position and listening's answers only nudge the candidates near them. The shown place moves to another candidate only when that one clearly leads over about 4 s of music.</li>
-            <li><strong>Measured:</strong> replaying 153 real plays with the music app's position wrong (0.73 s or 1.7 s off, or a skip landing 3.5 s away), the shown place was within 0.1 s of the music about 91% of the time. The rules before managed 75%, 0%, and 0%.</li>
-            <li><strong>Listening mode</strong> (always on, <Code path="src-tauri/src/listen.rs" />, <Code path="src-tauri/src/recognize.rs" />): after 3 s of sound it asks, in order, OnKey's own catalogue of learned songs (ShazamKit, on the Mac, exact to about 10 ms), the fingerprints, and then Shazam's catalogue. It checks again every 3 s for learned songs and about every 12 s for songs only Shazam knows. Shazam gets a signature of at most 5 s of the music app's sound, never the mic. A new Shazam answer needs a second one that agrees. A pause is 0.15 s of digital silence.</li>
-            <li>First test of Shazam's catalogue: it named 25 of 30 test songs from their first 5 s, in a median 0.24 s.</li>
+            <li><strong>声音指纹：</strong>每 10 毫秒记录约 60 Hz 至 7 kHz 范围内 8 个频段的变化（<code>FP_BANDS</code>，见 <Code path="src-tauri/src/dsp.rs" />）。</li>
+            <li><strong>匹配定位：</strong>追踪器会将最多 8 秒的当前声音与歌曲指纹比较，并保留多个加权候选位置（<Code path="src-tauri/src/tracker.rs" />）。</li>
+            <li><strong>上游版本测试：</strong>在 153 次播放位置偏移回放中，定位点约有 91% 的时间落在实际音乐位置 0.1 秒以内。该数据未经随声练版本独立复测。</li>
           </Hood>
         }
       />
 
       <Levels
-        id="you" title="5. Hearing you"
+        id="you" title="5. 采集你的声音"
         how={
-          <Scrolly label="How echo cancelling works" diagram={(s) => <Echo step={s} />} steps={[
-            <S key={0} title={ECHO_STEPS[0]}>On laptop speakers, your mic hears <strong>you and the song</strong>, singer included. Left alone, the singer would score points for you.</S>,
-            <S key={1} title={ECHO_STEPS[1]}>But OnKey has its own copy of the song <Glyph kind="wave" />, on the same clock as the mic.</S>,
-            <S key={2} title={ECHO_STEPS[2]}>It <strong>learns how that sound reaches the mic</strong>, with the delay, the room's echo, and your speakers' tone. Video calls do the same.</S>,
-            <S key={3} title={ECHO_STEPS[3]}>Then it <strong>subtracts</strong> <Glyph kind="echo" /> its prediction of the song, and what's left is <strong>your voice</strong>.</S>,
-            <S key={4} title={ECHO_STEPS[4]}>With <strong>headphones</strong>, the mic doesn't hear the song, so there's nothing to take away. It's still the most reliable setup.</S>,
+          <Scrolly label="回声消除原理" diagram={(s) => <Echo step={s} />} steps={[
+            <S key={0} title={ECHO_STEPS[0]}>使用扬声器时，麦克风会同时收到你和歌曲的声音。</S>,
+            <S key={1} title={ECHO_STEPS[1]}>应用也在同一时钟上采集播放器声音 <Glyph kind="wave" />。</S>,
+            <S key={2} title={ECHO_STEPS[2]}>滤波器会估算房间、扬声器和延迟如何改变伴奏传到麦克风后的声音。</S>,
+            <S key={3} title={ECHO_STEPS[3]}>再从麦克风信号中减去估算出的伴奏 <Glyph kind="echo" />，尝试保留你的声音。</S>,
+            <S key={4} title={ECHO_STEPS[4]}>使用耳机时，麦克风通常收不到扬声器伴奏，练习结果会更稳定。</S>,
           ]} />
         }
         hood={
           <Hood>
-            <li><strong>Live pitch:</strong> CREPE "tiny", on your echo-cancelled mic, every 10 ms, run on Core ML's CPU kernels: the pitch dot is 2 to 4 ms behind your voice, and singing a learned song costs OnKey 15 to 19% of one CPU core on my Mac (<Code path="src-tauri/src/pitch.rs" />).</li>
-            <li><strong>Echo canceller:</strong> a partitioned frequency-domain adaptive filter: 16 partitions of 256 samples at 16 kHz, so it models 256 ms of echo (<Code path="src-tauri/src/bleed.rs" />). Some outputs put the echo later than that, so every 2 s the echo's delay is measured (GCC-PHAT, up to 800 ms) and the song is fed to the filter that late. It only adapts while the song is clearly reaching the mic, and if its output comes out louder than the mic, the mic is passed through unchanged.</li>
-            <li><strong>Measured:</strong> built-in MacBook speakers (echo about 24 ms late): 20 dB or more removed. External speakers with the echo about 290 ms late: 8 to 14 dB, up from 1 to 2 dB before the delay was measured.</li>
-            <li><strong>Limit:</strong> 8 to 14 dB still leaves some of a loud song in the mic, and that can be mistaken for singing. Headphones are more reliable.</li>
+            <li><strong>实时音高：</strong>CREPE tiny 模型处理经过回声消除的麦克风信号，每 10 毫秒更新一次（<Code path="src-tauri/src/pitch.rs" />）。</li>
+            <li><strong>回声消除：</strong>使用分块频域自适应滤波器，16 个分块，每块 256 个采样点，采样率 16 kHz（<Code path="src-tauri/src/bleed.rs" />）。滤波器还会定期估算最长约 800 毫秒的回声延迟。</li>
+            <li><strong>限制：</strong>扬声器音量较大、环境回声明显或延迟过长时，伴奏仍可能进入麦克风信号并影响评分。耳机通常更可靠。</li>
           </Hood>
         }
       />
 
       <Levels
-        id="scoring" title="6. Scoring"
+        id="scoring" title="6. 计算评分"
         how={
           <>
-            <Scrolly label="How OnKey scores your singing" diagram={(s) => <ScoreDiagram step={s} />} steps={[
-              <S key={0} title={SCORE_STEPS[0]}>Every 10 ms that you and the singer both sing, your pitch is compared with the singer's line and the note bar, <strong>whichever you're closer to</strong>.</S>,
-              <S key={1} title={SCORE_STEPS[1]}>Within <strong>50 cents</strong> (half a semitone) earns full credit. Credit then fades to nothing at 150 cents.</S>,
-              <S key={2} title={SCORE_STEPS[2]}><strong>Octaves are forgiven</strong>, so you can sing in your own range.</S>,
-              <S key={3} title={SCORE_STEPS[3]}>Each half-second may shift up to <strong>80 ms</strong> to line up with the singer, so being a little early or late doesn't cost you.</S>,
-              <S key={4} title={SCORE_STEPS[4]}>Each note is <strong>hit</strong> if you hold it within a semitone for half its length. Its first 80 ms don't count: singers scoop up into notes.</S>,
-              <S key={5} title={SCORE_STEPS[5]}>Your score <Glyph kind="score" /> is your <strong>accuracy</strong>, scaled by <strong>how much of the singer's part you sang</strong>, so one good line won't get a good score.</S>,
+            <Scrolly label="随声练如何计算演唱评分" diagram={(s) => <ScoreDiagram step={s} />} steps={[
+              <S key={0} title={SCORE_STEPS[0]}>你与原唱都在演唱时，应用会把你的音高与原唱音高和音符条比较，采用较接近的一项。</S>,
+              <S key={1} title={SCORE_STEPS[1]}>音高差在 <strong>50 音分</strong>以内时得满分；到 150 音分时得分降为零。</S>,
+              <S key={2} title={SCORE_STEPS[2]}><strong>八度差会折算</strong>，便于按自己的音域演唱。</S>,
+              <S key={3} title={SCORE_STEPS[3]}>每半秒内最多调整 <strong>80 毫秒</strong>，减少轻微早唱或晚唱对结果的影响。</S>,
+              <S key={4} title={SCORE_STEPS[4]}>音符保持在半音范围内至少半段时长，才会记录为<strong>命中</strong>；前 80 毫秒不计。</S>,
+              <S key={5} title={SCORE_STEPS[5]}>总分 <Glyph kind="score" /> 结合<strong>音准</strong>与<strong>演唱覆盖比例</strong>，避免只唱一小段也得到很高的总分。</S>,
             ]} />
             <div className="wide mt-8 grid gap-5 xl:grid-cols-2">
               <CreditPlayground />
               <CoveragePlayground />
             </div>
-            <p>
-              For now the scoring is a bit lenient on purpose. It&rsquo;s set for beginners like me, so harder modes to
-              really test good singers may come later.
-            </p>
-            <p>The numbers in your report are explained in <Link href="/docs/scoring/">Scoring explained</Link>.</p>
+            <p>当前评分规则偏向初学者。字段定义和已知限制见<Link href="/docs/scoring/">评分说明</Link>。</p>
           </>
         }
         hood={
           <Hood>
-            <li><strong>Credit:</strong> <code>clamp((150 − |error|) / 100, 0, 1)</code>, with the error in cents folded into ±600 so octaves don't count (<code>credit</code>, <code>fold</code> in <Code path="src-tauri/src/dsp.rs" />).</li>
-            <li><strong>Timing slack:</strong> each 0.5 s window gets the one shift within ±80 ms (<code>TOL</code> = 8 frames) that lines you up best (<code>tolerant_error</code>).</li>
-            <li><strong>Your delay:</strong> after the song, a search from 0.3 s early to 1.5 s late finds the lag that fits best (<Code path="src-tauri/src/analysis.rs" />).</li>
-            <li><strong>Notes hit:</strong> held within 100 cents for at least half the note, ignoring its first 80 ms. Notes under 0.15 s aren't counted.</li>
-            <li><strong>Score:</strong> <code>100 × accuracy × (0.3 × min(1, sung / 0.1) + 0.7 × min(1, sung / 0.4))</code>: full credit from 40% of the singer's part sung.</li>
-            <li><strong>Checked against experts:</strong> on 20 rated recordings, notes hit agrees with expert rankings at 0.77 and the score at 0.61 (experts agree with each other at 0.88).</li>
+            <li><strong>音高得分：</strong><code>clamp((150 − |error|) / 100, 0, 1)</code>，误差单位为音分，并折算八度差（<code>credit</code>、<code>fold</code>，见 <Code path="src-tauri/src/dsp.rs" />）。</li>
+            <li><strong>时间容差：</strong>每 0.5 秒片段在 ±80 毫秒内寻找最匹配的偏移。</li>
+            <li><strong>演唱覆盖：</strong><code>100 × accuracy × (0.3 × min(1, sung / 0.1) + 0.7 × min(1, sung / 0.4))</code>；覆盖原唱部分达到 40% 时，覆盖系数达到上限。</li>
+            <li><strong>与专家评分比较：</strong>上游版本在 20 段录音上的命中音符一致度为 0.77、总分为 0.61；此结果未在随声练版本复测。</li>
           </Hood>
         }
       />
 
       <Levels
-        id="privacy" title="7. Privacy"
+        id="privacy" title="7. 隐私与数据"
         how={
-          <Scrolly label="What OnKey keeps and sends" diagram={(s) => <Privacy step={s} />} steps={[
-            <S key={0} title={PRIVACY_STEPS[0]}>On your Mac, OnKey keeps what it <strong>learned</strong> about each song, and for each take <strong>a recording of your mic</strong> <Glyph kind="lock" /> (about 0.5 MB a minute), your scores and the lyrics you sang, so you can play it back. Delete a take and it goes to the Trash.</S>,
-            <S key={1} title={PRIVACY_STEPS[1]}>It <strong>never saves or sends the music's audio</strong>, or the separated vocal. (If the music was on speakers, your mic recording will have some of it.)</S>,
-            <S key={2} title={PRIVACY_STEPS[2]}>To find lyrics it sends the song's <strong>artist, title, album and length</strong> to LRCLIB, a free, community-run lyrics database (unless Show lyrics is off). For covers, it asks Apple's iTunes Search by artist and title.</S>,
-            <S key={3} title={PRIVACY_STEPS[3]}>To name a song it hasn't learned, <strong>listening mode</strong> sends Shazam a <strong>signature</strong> of up to 5 seconds of the music app's sound (not the audio, and never your mic). Songs you've sung before are recognised on your Mac, so nothing goes to Shazam for them. Shazam is only asked when Spotify or Apple Music isn't saying what's playing, and you can turn it off in Settings.</S>,
+          <Scrolly label="随声练保存与发送的数据" diagram={(s) => <Privacy step={s} />} steps={[
+            <S key={0} title={PRIVACY_STEPS[0]}>歌曲音符、歌词时间信息与麦克风练习录音保存在本机 <Glyph kind="lock" />，供后续练习和回听。</S>,
+            <S key={1} title={PRIVACY_STEPS[1]}>应用<strong>不会保存或发送正在播放的音乐音频</strong>，也不会保存分离出的人声。扬声器声音可能进入麦克风练习录音。</S>,
+            <S key={2} title={PRIVACY_STEPS[2]}>查询歌词时会把歌曲名、歌手、专辑和时长发送给 LRCLIB；查询封面时会向 Apple 发送歌手和歌名。</S>,
+            <S key={3} title={PRIVACY_STEPS[3]}>项目没有自有 Shazam Developer ID，因此这项新歌识别能力尚未验证。若该能力可用，请求发送的是音乐指纹，不是麦克风录音。</S>,
           ]} />
         }
         hood={
           <Hood>
-            <li>Stored in <code>~/Library/Application Support/audio.onkey.app/</code>: <code>songs/</code> (pitch line, bars, fingerprint, lyric timings and a Shazam signature, saved for every learned song in either mode), <code>takes/</code> (<code>mic.m4a</code>: your microphone, AAC mono at about 64 kbps, about 0.5 MB a minute, all kept up to 2 GB in total, plus scores and the report with the lyric lines) and <code>records/</code> (logs and a summary of each play, numbers only, kept 30 days, at most 200 MB). Deleting a song or take moves it to the Trash.</li>
-            <li>Network: Shazam (listening mode, can be turned off) for songs not yet learned, LRCLIB lyric lookups (unless Show lyrics is off), iTunes Search for covers, iTunes Lookup for a recognised song's length, the cover images (from Apple, or YouTube's thumbnail), and a daily check of GitHub Releases for updates. No account, no analytics, and no server of mine.</li>
-            <li>More in <Link href="/docs/privacy/">Privacy &amp; legal</Link>.</li>
+            <li>随声练应用数据位于 <code>{DATA_DIR}</code>。歌曲、歌词缓存、练习录音和诊断记录由应用分别管理；录音可能包含扬声器播放的声音。</li>
+            <li>联网请求包括 LRCLIB 歌词查询、Apple 歌曲信息与封面，以及尚未验证的 ShazamKit 新歌识别。应用自动更新已关闭，不会请求 GitHub Releases。</li>
+            <li>无账号、无自建服务端、无网站分析统计或崩溃上报。完整内容见<Link href="/docs/privacy/">隐私与法律</Link>。</li>
           </Hood>
         }
       />

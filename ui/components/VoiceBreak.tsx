@@ -26,9 +26,9 @@ export default function VoiceBreak() {
   const minutes = Math.round(live.sungS / 60);
   return (
     <div role="status" className="pointer-events-auto fixed bottom-24 left-1/2 z-30 flex max-w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 items-center gap-3 rounded-2xl border border-white/8 bg-ink-900/90 px-4 py-2.5 text-sm text-ink-200 shadow-lg backdrop-blur animate-rise">
-      <span>You’ve sung for {minutes} minutes. Give your voice a few minutes’ rest, and have some water.</span>
-      <button onClick={() => { setShow(false); setNext(live.sungS + REPEAT_S); }} aria-label="Dismiss"
-              className="shrink-0 rounded-lg px-2 py-0.5 text-ink-400 transition hover:bg-white/8 hover:text-ink-100">OK</button>
+      <span>你已经唱了 {minutes} 分钟。休息几分钟，喝点水吧。</span>
+      <button onClick={() => { setShow(false); setNext(live.sungS + REPEAT_S); }} aria-label="关闭提醒"
+              className="shrink-0 rounded-lg px-2 py-0.5 text-ink-400 transition hover:bg-white/8 hover:text-ink-100">知道了</button>
     </div>
   );
 }

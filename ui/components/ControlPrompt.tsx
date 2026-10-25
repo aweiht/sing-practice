@@ -44,34 +44,33 @@ export default function ControlPrompt() {
       <div role="dialog" aria-modal="true" aria-labelledby="control-title" onClick={e => e.stopPropagation()}
            className="glass w-full max-w-md rounded-3xl p-6 shadow-2xl animate-rise">
         <h2 id="control-title" className="text-lg font-semibold tracking-tight">
-          {canAllow ? `Let OnKey control ${ask.app}?` : `OnKey can't control ${ask.app}`}
+          {canAllow ? `允许随声练控制 ${ask.app}？` : `随声练无法控制 ${ask.app}`}
         </h2>
         <p className="mt-2 text-sm text-ink-300">
           {canAllow
-            ? `OnKey is listening to ${ask.app}, not controlling it. To start songs, skip to the singing and pause from OnKey, it needs your permission. macOS will ask you once too.`
-            : `OnKey follows ${ask.app} by listening only. Play, pause and skip there.`}
+            ? `当前随声练只会聆听 ${ask.app}，不会控制它。要从随声练开始播放、跳到演唱段落或暂停歌曲，需要允许控制；macOS 也会向你询问一次。`
+            : `随声练会聆听 ${ask.app}，但不会控制它。请在该应用中播放、暂停或切歌。`}
         </p>
         {browser && (
           <p className="mt-2 rounded-xl bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
-            This is the bigger permission: OnKey can then read and control the YouTube tab in your browser. Your browser
-            also needs “Allow JavaScript from Apple Events” turned on.
+            这项权限的范围较大：随声练可以读取并控制浏览器中的 YouTube 标签页。你还需要在浏览器中开启“允许来自 Apple 事件的 JavaScript”。
           </p>
         )}
         <div className="mt-5 flex flex-wrap justify-end gap-2">
-          <button onClick={() => setAsk(null)} className="rounded-xl px-4 py-2 text-sm text-ink-300 transition hover:text-white">Not now</button>
+          <button onClick={() => setAsk(null)} className="rounded-xl px-4 py-2 text-sm text-ink-300 transition hover:text-white">暂不允许</button>
           {ask.track && (
             <button onClick={open} className="rounded-xl bg-white/8 px-4 py-2 text-sm text-ink-100 transition hover:bg-white/12">
-              Open in {browser ? "your browser" : ask.app}
+              在{browser ? "浏览器" : ` ${ask.app}`}中打开
             </button>
           )}
           {canAllow && (
             <button disabled={busy} onClick={allow}
                     className="rounded-xl bg-accent-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-400 disabled:opacity-50">
-              Allow control
+              允许控制
             </button>
           )}
         </div>
-        <p className="mt-4 text-[11px] text-ink-500">You can change this any time in Settings.</p>
+        <p className="mt-4 text-[11px] text-ink-500">你可以随时在“设置”中更改此选项。</p>
       </div>
     </div>
   );

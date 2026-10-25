@@ -928,7 +928,7 @@ fn run(app: AppHandle, shared: Arc<Mutex<Shared>>, store: Store, learners: Learn
                         log("no separation model: this song can be sung but not learned");
                         // there but unusable (or not there, which the window already says): the window says why
                         if crate::models::state()["state"] == "ready" {
-                            crate::models::set_state(json!({"state": "missing", "error": "they couldn't be loaded"}));
+                            crate::models::set_state(json!({"state": "missing", "error": "无法加载模型"}));
                         }
                     }
                     if let Some(l) = &l {
@@ -1174,9 +1174,9 @@ fn run(app: AppHandle, shared: Arc<Mutex<Shared>>, store: Store, learners: Learn
             // still be naming it, and "Couldn't name this song" over a song being learned was wrong)
             let following = cur.as_ref().filter(|c| st.as_ref().is_some_and(|(s, _)| s.track.id == c.take.track.id));
             let line = match following {
-                Some(c) if c.take.mode == Mode::Learn => Some(("learning", "Learning: sing along, it’s scored from the next play".to_string())),     // the title is right above
+                Some(c) if c.take.mode == Mode::Learn => Some(("learning", "正在学习：跟着唱，下次播放时会显示音准评分".to_string())),     // the title is right above
                 Some(_) => None,
-                None if crate::listen::not_song() => Some(("podcast", "Podcast playing: OnKey sings along to music".to_string())),
+                None if crate::listen::not_song() => Some(("podcast", "当前播放的是播客，随声练只会跟唱音乐".to_string())),
                 None => crate::listen::status_line(),
             };
             if line != status_line {
@@ -1762,7 +1762,7 @@ fn score_take(app: &AppHandle, shared: &Arc<Mutex<Shared>>, store: &Store, done:
             Reference::Learned(take.reference_line())
         } else {
             let waited = Instant::now();
-            let l = learner.ok_or("this song can't be learned: the separation model is missing")?;
+            let l = learner.ok_or("缺少伴奏分离模型，无法学习这首歌")?;
             my_turn(&take.track.name);
             let l = l.finish()?;
             log(&format!("{}: learner finished ({:.0} s of singer, {:.0} s after the take ended; {} other learner{} running)", take.track.name,
@@ -1782,7 +1782,7 @@ fn score_take(app: &AppHandle, shared: &Arc<Mutex<Shared>>, store: &Store, done:
             Reference::Separated { vocal16: l.vocal16, midi: l.midi, periodicity: l.periodicity }
         };
         if is_dropped(&take.track.id) {
-            return Err("stopped from the Library".into());
+            return Err("已在曲库中停止学习".into());
         }
         if learnt_kept.is_some() {
             crate::learn::yield_to_singing(None);
@@ -1808,7 +1808,7 @@ fn score_take(app: &AppHandle, shared: &Arc<Mutex<Shared>>, store: &Store, done:
         // how much of the song this play alone covered (what was learned before aside)
         let this_play = out.learned.as_ref().map(|(_, c, _)| c.iter().filter(|v| **v).count() as f64 * crate::dsp::FRAME_S / take.track.duration.max(1.0));
         if is_dropped(&take.track.id) {
-            return Err("stopped from the Library".into());
+            return Err("已在曲库中停止学习".into());
         }
         if let Some((line, covered, fp)) = out.learned {
             let covered_now = covered.clone();

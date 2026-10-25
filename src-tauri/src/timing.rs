@@ -37,9 +37,9 @@ const STRAY_S: f64 = 0.04;
 const STRAY_MAX_S: f64 = 0.08;
 const SPREAD_MAX_S: f64 = 0.045;
 
-const UNEVEN: &str = "Your taps were too uneven to measure. Try again, tapping along in rhythm, like clapping to a beat.";
-pub const UNBELIEVABLE: &str = "That doesn’t look right: did you wait for each click? Try again, tapping along in rhythm, like clapping to a beat.";
-pub const REACTING: &str = "It looks like you waited for each click. Try tapping along in rhythm instead.";
+const UNEVEN: &str = "点按间隔不够稳定，无法测量。请跟着节奏重试，就像跟着节拍打拍子。";
+pub const UNBELIEVABLE: &str = "结果不太合理。请跟着每次提示音按节奏点按，不要等听到提示音后再按，然后重试。";
+pub const REACTING: &str = "你似乎是在听到提示音后才跟着点按。请随着节奏点按。";
 /// Tapping along in rhythm is tight (a standard deviation of 10-20 ms) and steady; waiting for each click and
 /// reacting to it is looser (a reaction varies by 35-60 ms), throws more strays, and falls behind as the run goes
 /// on. Any one of these is reacting (ms, share of taps). On a check's 20 taps counted, in synthetic runs (the
@@ -113,7 +113,7 @@ pub fn estimate(clicks: &[f64], taps: &[f64]) -> Result<Estimate, &'static str> 
     }
     let mut all: Vec<f64> = per.iter().skip(SKIP).flatten().copied().collect();
     if all.len() < MIN_TAPS {
-        return Err("Not enough taps in time with the clicks. Tap along in rhythm, once on each click.");
+        return Err("有效点按次数不足。请跟着节奏，每次提示音点按一次，然后重试。");
     }
     let mid = median(&mut all);
     // one tap per click: the one nearest the rest (a double tap or a slip)
@@ -233,11 +233,11 @@ pub fn on_one_clock(run: &Run) -> Result<Mapped, &'static str> {
         let drift = offs[offs.len() - 1 - k] - offs[k];
         ("output timestamps", median(&mut offs), drift)
     } else {
-        let Some((o, d)) = by_current_time(&run.now) else { return Err("The check couldn’t time its clicks. Try again.") };
+        let Some((o, d)) = by_current_time(&run.now) else { return Err("无法确定提示音的时间，请重试。") };
         ("currentTime", o + run.base_latency.unwrap_or(0.0).clamp(0.0, 0.2), d)
     };
     if drift_s > MAX_DRIFT_S {
-        return Err("The sound stalled or restarted during the check, so it can’t be timed. Try again.");
+        return Err("检查期间音频中断或重新开始，无法计算时延，请重试。");
     }
     let taps: Vec<(f64, bool)> = run.taps.iter().map(|&t| tap_time(t)).collect();
     Ok(Mapped { clicks: run.clicks.iter().map(|c| c + offset_s).collect(), taps: taps.iter().map(|t| t.0 / 1000.0).collect(),
@@ -411,7 +411,7 @@ fn log_run(run: &Run, m: Option<&Mapped>) {
 /// Returns what to show: the measurement and correction, `confirm` (one more to go), or `error` (what to say).
 pub fn check(uid: &str, run: &Run) -> Value {
     if uid.is_empty() || uid != crate::capture::output_uid() {
-        return json!({"error": "The output changed during the check. Try again."});
+        return json!({"error": "检查期间输出设备发生变化，请重试。"});
     }
     let mapped = on_one_clock(run);
     log_run(run, mapped.as_ref().ok());

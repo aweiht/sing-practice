@@ -135,7 +135,7 @@ impl Take {
             let m = self.usr[i].map(|u| self.fold(i, u));
             json!([t, m, self.err.get(i).copied().flatten().map(f64::abs)])
         }).collect();
-        json!({"title": title, "artist": artist, "footer": "SingOnKey.app", "seconds": secs, "lo": lo, "hi": hi,
+        json!({"title": title, "artist": artist, "footer": "随声练", "seconds": secs, "lo": lo, "hi": hi,
                "step": fs, "notes": notes, "line": line})
     }
 
@@ -171,10 +171,10 @@ fn voice(samples: &[f32], rate: f64, rec0: f64, secs: f64) -> Vec<i16> {
     out
 }
 
-/// A file name for the clip in `dir` that isn't taken: "OnKey - <song> - 1m05s.mp4", then " 2", " 3"…
+/// A file name for the clip in `dir` that isn't taken: "随声练-<song>-1m05s.mp4", then " 2", " 3"…
 fn out_path(dir: &Path, song: &str, start: i64) -> PathBuf {
     let clean: String = song.chars().map(|c| if matches!(c, '/' | ':' | '\\') || c.is_control() { ' ' } else { c }).collect();
-    let base = format!("OnKey - {} - {}m{:02}s", clean.trim(), start / 60, start % 60);
+    let base = format!("随声练-{}-{}m{:02}s", clean.trim(), start / 60, start % 60);
     (1..).map(|n| dir.join(if n == 1 { format!("{base}.mp4") } else { format!("{base} {n}.mp4") }))
         .find(|p| !p.exists()).unwrap()
 }
@@ -182,24 +182,24 @@ fn out_path(dir: &Path, song: &str, start: i64) -> PathBuf {
 /// Renders the clip from song second `start` of the take in `take_dir` (its result as `r`) into `dir`: the new
 /// file's path.
 pub fn render(r: &Value, take_dir: &Path, start: i64, dir: &Path) -> Result<PathBuf, String> {
-    let take = Take::from_result(r).ok_or("this take has no place in the song to start a clip from")?;
+    let take = Take::from_result(r).ok_or("这段演唱没有可用于剪辑的歌曲位置")?;
     let title = r["track"]["name"].as_str().unwrap_or("");
     let artist = r["track"]["artist"].as_str().unwrap_or("");
-    let mic = crate::takeaudio::recording(take_dir).ok_or("this take's recording isn't kept any more")?;
-    let (samples, rate) = crate::takeaudio::decode_mono(&mic).map_err(|e| format!("couldn't read the recording ({e})"))?;
+    let mic = crate::takeaudio::recording(take_dir).ok_or("这段演唱的录音已不在本机")?;
+    let (samples, rate) = crate::takeaudio::decode_mono(&mic).map_err(|e| format!("无法读取这段录音（{e}）"))?;
     let secs = take.seconds(start);
     let rec0 = start as f64 - take.song_offset + take.latency_s;
-    std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(dir).map_err(|e| format!("无法创建视频保存目录：{e}"))?;
     let out = out_path(dir, title, start);
     let tmp_audio = dir.join(format!(".onkey-share-{}.m4a", std::process::id()));
-    crate::takeaudio::write_m4a(&tmp_audio, &voice(&samples, rate, rec0, secs), rate).map_err(|e| format!("couldn't write the voice ({e})"))?;
-    let spec = CString::new(take.spec(start, title, artist).to_string()).map_err(|e| e.to_string())?;
-    let c = |p: &Path| CString::new(p.to_string_lossy().as_bytes()).map_err(|e| e.to_string());
+    crate::takeaudio::write_m4a(&tmp_audio, &voice(&samples, rate, rec0, secs), rate).map_err(|e| format!("无法写入人声音频（{e}）"))?;
+    let spec = CString::new(take.spec(start, title, artist).to_string()).map_err(|e| format!("视频内容包含无效字符：{e}"))?;
+    let c = |p: &Path| CString::new(p.to_string_lossy().as_bytes()).map_err(|e| format!("视频路径包含无效字符：{e}"));
     let st = unsafe { onkey_share_render(spec.as_ptr(), c(&tmp_audio)?.as_ptr(), c(&out)?.as_ptr(), ICON.as_ptr(), ICON.len() as i64) };
     let _ = std::fs::remove_file(&tmp_audio);
     if st != 0 {
         let _ = std::fs::remove_file(&out);
-        return Err(format!("couldn't make the video (step {st})"));
+        return Err(format!("无法生成视频（步骤 {st}）"));
     }
     Ok(out)
 }
@@ -282,7 +282,7 @@ mod tests {
         let t0 = std::time::Instant::now();
         let out = render(&r, &tdir, 0, &dir).expect("rendered");
         eprintln!("rendered {:.1} s of clip in {:.2} s", Take::from_result(&r).unwrap().seconds(0), t0.elapsed().as_secs_f64());
-        assert!(out.file_name().unwrap().to_string_lossy().starts_with("OnKey - Test  Song One - 0m00s"));
+        assert!(out.file_name().unwrap().to_string_lossy().starts_with("随声练-Test  Song One-0m00s"));
         assert_eq!(tracks(&out), Some((1, 1)), "one video track and one audio track");
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -299,7 +299,7 @@ mod real_take {
         let at: i64 = std::env::var("ONKEY_SHARE_AT").ok().and_then(|s| s.parse().ok()).unwrap_or(0);
         let out = std::path::PathBuf::from(std::env::var("ONKEY_SHARE_OUT").expect("ONKEY_SHARE_OUT"));
         let data = std::path::PathBuf::from(std::env::var("HOME").unwrap())
-            .join("Library/Application Support/audio.onkey.app/takes").join(&id);
+            .join("Library/Application Support/io.github.aweiht.sing-practice/takes").join(&id);
         let mut r: serde_json::Value = serde_json::from_slice(&std::fs::read(data.join("result.json")).unwrap()).unwrap();
         let m: serde_json::Value = serde_json::from_slice(&std::fs::read(data.join("meta.json")).unwrap()).unwrap();
         r["song_offset"] = m["song_offset"].clone();

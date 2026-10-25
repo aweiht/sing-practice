@@ -30,10 +30,10 @@ export default function SharePanel({ id, song, t, onClose, onShow, onPlay }:
     try {
       const r = await shareTake(id, win.start);
       setState("done");
-      setMsg(`Saved to Downloads. In Instagram, add ${song} and start it at ${r.at} (copied).`);
-    } catch (e) {
+      setMsg(`已保存到“下载”文件夹。请在 Instagram 中添加《${song}》，并从 ${r.at} 开始播放（时间已复制）。`);
+    } catch {
       setState("failed");
-      setMsg(`Couldn’t make the video: ${String(e)}`);
+      setMsg("视频生成失败。请重试；如果问题仍然存在，可以在“设置”中报告问题。");
     }
   };
 
@@ -41,10 +41,10 @@ export default function SharePanel({ id, song, t, onClose, onShow, onPlay }:
     <div className="mt-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="text-ink-100">
-          {win ? <><b className="tabular">{win.at}–{win.to}</b><span className="text-ink-400"> · {win.hits} of {win.notes} notes hit</span></> : "Finding the clip…"}
+          {win ? <><b className="tabular">{win.at}–{win.to}</b><span className="text-ink-400"> · 命中 {win.hits}/{win.notes} 个音符</span></> : "正在查找片段…"}
         </span>
-        <span className="flex rounded-lg bg-white/6 p-0.5" role="radiogroup" aria-label="Which 20 seconds">
-          {([["playhead", "From the playhead", fromPlayhead], ["best", "Best bit", best]] as const).map(([k, label, run]) => (
+        <span className="flex rounded-lg bg-white/6 p-0.5" role="radiogroup" aria-label="选择 20 秒片段">
+          {([["playhead", "当前播放位置", fromPlayhead], ["best", "最佳片段", best]] as const).map(([k, label, run]) => (
             <button key={k} role="radio" aria-checked={mode === k} onClick={() => void run()}
                     className={`rounded-md px-2.5 py-1 transition ${mode === k ? "bg-white/12 text-white" : "text-ink-300 hover:text-white"}`}>
               {label}
@@ -53,19 +53,19 @@ export default function SharePanel({ id, song, t, onClose, onShow, onPlay }:
         </span>
         <button disabled={!win} onClick={() => win && onPlay(win.graph)} className="inline-flex items-center gap-1 text-ink-200 transition hover:text-white disabled:opacity-50">
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M8 5v14l11-7z" /></svg>
-          Play it
+          播放片段
         </button>
         <span className="ml-auto flex items-center gap-2">
           <button disabled={!win || state === "making"} onClick={() => void make()}
                   className="rounded-xl bg-accent-500 px-4 py-2 font-medium text-white shadow-lg shadow-accent-600/25 transition hover:bg-accent-400 disabled:opacity-60">
-            {state === "making" ? "Making video…" : "Make video"}
+            {state === "making" ? "正在生成视频…" : "生成视频"}
           </button>
-          <button onClick={onClose} className="px-1 text-ink-400 transition hover:text-white" aria-label="Close">✕</button>
+          <button onClick={onClose} className="px-1 text-ink-400 transition hover:text-white" aria-label="关闭">✕</button>
         </span>
       </div>
       <p className={`mt-2 text-xs ${state === "failed" ? "text-red-300" : state === "done" ? "text-accent-200" : "text-ink-400"}`}>
-        {msg || (noBest ? "No notes hit in this take, so there’s no best bit: it starts at the playhead."
-          : "Your voice as recorded, the notes and your score, with no music added. Add the song in Instagram from its own library, starting at the time shown. Sung with the song on speakers? Then some of it is in your recording: headphone takes are best for sharing.")}
+        {msg || (noBest ? "本次练习没有命中音符，无法自动选取最佳片段；将从当前播放位置开始。"
+          : "导出视频包含你录下的演唱、音符和得分，不会添加音乐。请在 Instagram 的音乐库中添加歌曲，并从上方显示的时间开始播放。如果演唱时歌曲通过扬声器播放，部分音乐也会被录入；使用耳机录制更适合分享。")}
       </p>
     </div>
   );

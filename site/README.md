@@ -1,37 +1,21 @@
-# OnKey website
+# 随声练网站
 
-The landing page and docs for OnKey: Next.js (App Router) with Tailwind, built as a fully static site.
+这里包含随声练的中文介绍页和使用文档，使用 Next.js App Router 与 Tailwind 构建静态页面。网站源码目前没有部署，也没有官网域名。
+
+## 本地开发与构建
+
+在仓库根目录执行：
 
 ```sh
-cd site
-npm install
-npm run dev       # http://localhost:3080
-npm run build     # static files in site/out/
-npm run serve     # serve site/out/ on http://localhost:3080
+npm --prefix site ci
+npm --prefix site run dev       # http://localhost:3080
+npm --prefix site run build     # 静态文件写入 site/out/
 ```
 
-## Deploying
+也可以先进入 `site/` 再执行 `npm ci`、`npm run dev` 或 `npm run build`。构建网站只会生成文档静态文件，不会构建 Mac 应用。
 
-The site is on Cloudflare Pages: project root `site`, build command `npm run build`, output directory `out`.
-Any static host works the same way, since the export uses no server functions. For a project site served under
-`/<repo>/` (GitHub Pages without a custom domain), build with `BASE_PATH=/<repo> npm run build`.
+## 内容与隐私
 
-## Settings
+网站默认使用简体中文和本机系统字体，不加载原站统计脚本、外部演示视频或原作者个人联系入口。源码仓库地址和网站元信息在 `lib/site.ts` 中设置；当前 `siteUrl` 暂用 GitHub 仓库地址，不表示网站已经部署。
 
-Everything that changes between releases is in the `LAUNCH` block at the top of `lib/site.ts`.
-`npm run build` lists any that are empty.
-
-| Key | What | When empty |
-|---|---|---|
-| `githubUrl` | the GitHub repository | (required) |
-| `downloadUrl` | the notarised `OnKey.dmg` | the repo's latest-release page |
-| `windowsIssueUrl` | the "Want Windows?" issue | the repo's issue list |
-| `contactEmail` | the contact address | "(address to come)" |
-| `siteUrl` | the site's own address | no link previews |
-| `plausibleDomain` | Plausible's site name: cookieless page counts | no Plausible script |
-| `flowMynaTrackerId` | Flow Myna website tracker (`fm_…`): cookieless visit paths, only on the live domain | no Flow Myna script |
-| `discordUrl` | the Discord invite | no Discord links |
-| `demoVideo` (+ `demoPoster`) | the demo video's address and its still | the lane illustration |
-| `notarised` | whether the download is notarised by Apple | install steps explain "Open Anyway" |
-
-Keep the numbers on `docs/scoring` in step with the latest measurements.
+产品基于 Daniel Murrell 的 `dsmurrell/onkey`（OnKey）改编。上游 MIT 许可证及第三方声明保留在仓库根目录；模型和依赖的许可证详情见“致谢与许可”页面。

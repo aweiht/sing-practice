@@ -1,5 +1,5 @@
 {
-  "name": "onkey-site",
+  "name": "suisheng-lian-site",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "serve": "npx --yes serve@14.2.4 out -l 3080"
   },
   "dependencies": {
-    "next": "15.5.27",
+    "next": "15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

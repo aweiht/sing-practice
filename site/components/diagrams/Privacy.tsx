@@ -3,13 +3,13 @@ import { Flow, Frame } from "@/components/explain/Frame";
 import { useClock } from "@/components/explain/motion";
 
 export const PRIVACY_STEPS = [
-  "Kept on your Mac: what OnKey learned, and your takes",
-  "Never saved or sent: the music's audio",
-  "Sent out: lookups by name, for lyrics and covers",
-  "To name a new song: a signature to Shazam",
+  "保存在 Mac 上：歌曲音符与练习录音",
+  "不会保存或发送：正在播放的音乐音频",
+  "查询歌词和封面：发送歌曲名称等信息",
+  "Shazam 识别能力未验证；识别时会发送音乐指纹",
 ];
 
-const KEPT = ["Each song's notes and bars", "Its fingerprint and signature", "The lyrics and their timing", "Takes: your mic, scores, lyrics"];
+const KEPT = ["歌曲音符与音符条", "声音指纹与识别信息", "歌词及时间信息", "练习录音、评分与报告"];
 
 /** A box outside the Mac: what it is, and what's sent to it (one line each). */
 function Service({ y, h, title, lines, colour, on, dashed }: {
@@ -31,9 +31,9 @@ export function Privacy({ step = 3, all = false }: { step?: number; all?: boolea
   const t = useClock("privacy", 3);
   const on = (i: number) => all || i === step;
   return (
-    <Frame label="What OnKey keeps and sends" caption={all ? "OnKey never saves the music it listens to" : PRIVACY_STEPS[step]}>
+    <Frame label="随声练保存与发送的数据" caption={all ? "播放中的音乐只分析，不保存" : PRIVACY_STEPS[step]}>
       <rect x="20" y="28" width="250" height="236" rx="16" fill="var(--panel)" stroke="var(--line)" />
-      <text x="36" y="50" fontSize="12" fontWeight="600" fill="var(--fg)">Your Mac</text>
+      <text x="36" y="50" fontSize="12" fontWeight="600" fill="var(--fg)">你的 Mac</text>
       <g className="hl" opacity={on(0) ? 1 : 0.35}>
         {KEPT.map((s, i) => (
           <g key={s} transform={`translate(32 ${66 + i * 30})`}>
@@ -44,15 +44,15 @@ export function Privacy({ step = 3, all = false }: { step?: number; all?: boolea
       </g>
       <g className="hl" opacity={on(1) ? 1 : 0.35} transform="translate(32 196)">
         <rect width="226" height="44" rx="8" fill="none" stroke="var(--off)" strokeDasharray="4 3" />
-        <text x="9" y="18" fontSize="11.5" fill="var(--fg-soft)">The music's audio: analysed as</text>
-        <text x="9" y="34" fontSize="11.5" fill="var(--fg-soft)">it plays, never saved or sent</text>
+        <text x="9" y="18" fontSize="11.5" fill="var(--fg-soft)">播放中的音乐：边播放边分析</text>
+        <text x="9" y="34" fontSize="11.5" fill="var(--fg-soft)">不会保存或发送</text>
       </g>
       <Flow d="M270 61 H318" colour="var(--singer)" t={t} on={on(2)} />
       <Flow d="M270 128 H318" colour="var(--singer)" t={t} on={on(2)} />
       <Flow d="M270 208 H318" colour="var(--music)" t={t} on={on(3)} />
-      <Service y={30} h={62} title="LRCLIB" lines={["artist, title, album,", "length: for lyrics"]} colour="var(--singer)" on={on(2)} />
-      <Service y={102} h={52} title="iTunes Search" lines={["artist, title: cover"]} colour="var(--singer)" on={on(2)} />
-      <Service y={166} h={84} title="Shazam" lines={["a signature of the", "music, never the mic;", "can be turned off"]} colour="var(--music)" on={on(3)} dashed />
+      <Service y={30} h={62} title="LRCLIB" lines={["歌名、歌手、专辑", "和时长：查询歌词"]} colour="var(--singer)" on={on(2)} />
+      <Service y={102} h={52} title="iTunes Search" lines={["歌手、歌名：查询封面"]} colour="var(--singer)" on={on(2)} />
+      <Service y={166} h={84} title="ShazamKit" lines={["新歌识别尚未验证", "可能发送音乐指纹", "不含麦克风录音"]} colour="var(--music)" on={on(3)} dashed />
     </Frame>
   );
 }

@@ -1,8 +1,8 @@
-// One made-up phrase used by every diagram, so the reader sees the same song learned, placed and scored.
-// Each syllable: start and end (seconds), note (semitones above the lowest row), word.
+// 所有图解共用同一段虚构歌词，演示学习、定位和评分。
+// 每项依次为起止时间（秒）、音高（相对最低音符的半音数）和歌词字。
 export const PHRASE: [number, number, number, string][] = [
-  [0.2, 0.55, 4, "Here's"], [0.6, 0.85, 4, "a"], [0.9, 1.5, 7, "line"],
-  [1.6, 1.9, 6, "you"], [1.95, 2.6, 4, "sing"], [2.7, 3.0, 2, "a-"], [3.05, 3.9, 4, "long"],
+  [0.2, 0.55, 4, "这"], [0.6, 0.85, 4, "首"], [0.9, 1.5, 7, "歌"],
+  [1.6, 1.9, 6, "由"], [1.95, 2.6, 4, "你"], [2.7, 3.0, 2, "来"], [3.05, 3.9, 4, "唱"],
 ];
 export const DUR = 4.1;
 export const ROWS = 10;

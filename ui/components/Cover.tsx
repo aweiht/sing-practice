@@ -20,7 +20,7 @@ export default function Cover({ name, art, link, size = 56, eager = false }: { n
     // a span, not a button: covers sit inside cards that are themselves clickable
     const open = (e: SyntheticEvent) => { e.stopPropagation(); e.preventDefault(); void openLink(link); };
     return (
-      <span role="link" tabIndex={0} title="Open in Apple Music" aria-label={`Open ${name} in Apple Music`}
+      <span role="link" tabIndex={0} title="在 Apple Music 中打开" aria-label={`在 Apple Music 中打开《${name}》`}
             onClick={open} onKeyDown={e => { if (e.key === "Enter") open(e); }}
             className="shrink-0 cursor-pointer transition hover:opacity-85" style={{ borderRadius: radius }}>
         {img}
@@ -65,11 +65,11 @@ export function SourceLinks({ source, artist, name, appleLink, trackId }: { sour
   return (
     <>
       {source && (own
-        ? <a href={own} onClick={open(own)} title={`Open in ${source}`} className="text-ink-500 underline-offset-2 transition hover:text-ink-200 hover:underline">in {source} ↗</a>
-        : <span className="text-ink-500" title="The app OnKey is following">in {source}</span>)}
+        ? <a href={own} onClick={open(own)} title={`在 ${source} 中打开`} className="text-ink-500 underline-offset-2 transition hover:text-ink-200 hover:underline">在 {source} 中打开 ↗</a>
+        : <span className="text-ink-500" title="随声练正在跟随的应用">在 {source} 中播放</span>)}
       {other && <>
         {source && <span className="text-ink-600">·</span>}
-        <a href={other.href} onClick={open(other.href)} title={`Open in ${other.label}`}
+        <a href={other.href} onClick={open(other.href)} title={`在 ${other.label} 中打开`}
            className="text-ink-600 underline-offset-2 transition hover:text-ink-300 hover:underline">{other.label} ↗</a>
       </>}
     </>
@@ -82,7 +82,7 @@ export function AppleMusicLink({ link, className = "" }: { link?: string | null;
   return (
     <a href={link} onClick={e => { e.preventDefault(); e.stopPropagation(); void openLink(link); }}
        className={`text-ink-400 underline decoration-ink-600 underline-offset-2 transition hover:text-white ${className}`}>
-      Apple Music ↗
+      在 Apple Music 中打开 ↗
     </a>
   );
 }

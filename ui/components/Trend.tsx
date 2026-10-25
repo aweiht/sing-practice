@@ -23,7 +23,7 @@ export default function Trend({ takes }: { takes: TakeSummary[] }) {
   const hv = hover != null ? takes[hover] : null;
   return (
     <div ref={ref} className="relative">
-      <svg width={w} height={H} className="block"
+      <svg width={w} height={H} className="block" role="img" aria-label={`练习得分趋势，共 ${n} 次记录`}
            onMouseMove={e => {
              const r = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
              const i = Math.round(((e.clientX - r.left - P.l) / (w - P.l - P.r)) * (n - 1));
@@ -47,8 +47,8 @@ export default function Trend({ takes }: { takes: TakeSummary[] }) {
              style={{ left: Math.min(Math.max(0, x(hover!) - 90), w - 190), width: 180 }}>
           <div className="truncate font-medium text-ink-100">{hv.track.name}</div>
           <div className="text-ink-400">{when(hv.recorded)}</div>
-          <div className="mt-1 text-ink-200">Score <span className="tabular font-semibold text-white">{hv.score}</span>
-            {hv.notes_total ? <> · {hv.notes_hit}/{hv.notes_total} notes</> : null}</div>
+          <div className="mt-1 text-ink-200">得分 <span className="tabular font-semibold text-white">{hv.score}</span>
+            {hv.notes_total ? <> · 命中 {hv.notes_hit}/{hv.notes_total} 个音符</> : null}</div>
         </div>
       )}
     </div>

@@ -1,57 +1,9 @@
-"use client";
-import { useEffect, useState } from "react";
-import { DOWNLOAD_URL, SITE_URL, WINDOWS_ISSUE_URL } from "@/lib/site";
-import { track } from "@/lib/track";
-import { FM_EVENTS, fm } from "@/lib/flowmyna";
-
-/** What the visitor is on: a Mac (download), a phone or tablet (send the link to their Mac), or another computer
- *  (a note that it runs on Macs only for now). The page is static, so it's read in the browser; until then (and with no script) it's a Mac,
- *  the plain download link. iPads ask for desktop sites as a Mac, so a Mac with a touch screen is a tablet. */
-type Device = "mac" | "mobile" | "other";
-function detect(): Device {
-  const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod|Android|Mobile/i.test(ua)) return "mobile";
-  if (/Macintosh/i.test(ua)) return navigator.maxTouchPoints > 1 ? "mobile" : "mac";
-  return "other";
-}
-
-export function useDevice(): Device {
-  const [d, setD] = useState<Device>("mac");
-  useEffect(() => { setD(detect()); }, []);
-  return d;
-}
-
-const LINK = SITE_URL ?? "https://singonkey.app";
-
-/** The page's main call to action, for whatever the visitor is on. `note`: show the line under it (not in the header). */
-/** `where`: which button it is (header, top, bottom), kept with the visit-path event. */
-export function DownloadButton({ className, note = true, where }: { className: string; note?: boolean; where: string }) {
-  const device = useDevice();
-  const [sent, setSent] = useState("");
-  if (device === "mac") return <a href={DOWNLOAD_URL} data-track="Download for Mac" onClick={() => track("Download")} className={className}>Download for Mac</a>;
-  if (device === "other") {
-    return (
-      <span className="inline-grid gap-1.5">
-        <a href={DOWNLOAD_URL} data-track="Download (not a Mac)" onClick={() => track("Download (not a Mac)")} className={className}>Download for Mac</a>
-        {note && <span className="text-xs text-muted">OnKey runs on Macs only for now. <a href={WINDOWS_ISSUE_URL} data-track="Windows issue" className="underline underline-offset-2">Want Windows? Vote here</a>.</span>}
-      </span>
-    );
-  }
-  // a phone or tablet: the share sheet (AirDrop, Messages, a note to self), else an email to yourself
-  const send = async () => {
-    track("Send to Mac");
-    fm(FM_EVENTS.sentToMac, { button: where });  // (downloads and other ways out: Flow Myna's clickout autocapture)
-    const data = { title: "OnKey", text: "OnKey, a singing trainer for the Mac: download it on your Mac from", url: LINK };
-    if (navigator.share) {
-      try { await navigator.share(data); setSent("Sent"); } catch { /* closed the sheet */ }
-      return;
-    }
-    location.href = `mailto:?subject=${encodeURIComponent("OnKey for my Mac")}&body=${encodeURIComponent(`${data.text} ${LINK}`)}`;
-  };
+/** 当前没有中文版发布安装包；引导访问源码构建说明。 */
+export function DownloadButton({ className, note = true }: { className: string; note?: boolean; where?: string }) {
   return (
     <span className="inline-grid gap-1.5">
-      <button type="button" onClick={send} className={className}>{sent || "Send it to your Mac"}</button>
-      {note && <span className="text-xs text-muted">OnKey runs on Macs, not phones. Send yourself the link for later.</span>}
+      <a href="/docs/" className={className}>查看源码与构建指南</a>
+      {note && <span className="text-xs text-muted">目前尚无中文版发布安装包，可从源码自行构建。</span>}
     </span>
   );
 }

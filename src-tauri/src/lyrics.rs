@@ -16,12 +16,12 @@ use crate::source::Track;
 
 /// OnKey's public repository, named in each request so LRCLIB knows who's asking (the same address as
 /// site/lib/site.ts). Empty, requests would say just "OnKey/<version>".
-pub const REPO_URL: &str = "https://github.com/dsmurrell/onkey";
+pub const REPO_URL: &str = "https://github.com/aweiht/sing-practice";
 
 /// Who's asking, as LRCLIB asks apps to say: "OnKey/<version> (+<repository>)".
 pub fn user_agent() -> String {
     let v = env!("CARGO_PKG_VERSION");
-    if REPO_URL.is_empty() { format!("OnKey/{v}") } else { format!("OnKey/{v} (+{REPO_URL})") }
+    if REPO_URL.is_empty() { format!("随声练/{v}") } else { format!("随声练/{v} (+{REPO_URL})") }
 }
 
 /// An answer with synced lyrics is kept this long; any other answer (not found, plain lyrics only) for a day.
@@ -421,7 +421,7 @@ mod tests {
     #[test]
     fn says_who_is_asking() {
         let ua = user_agent();
-        let v = format!("OnKey/{}", env!("CARGO_PKG_VERSION"));
+        let v = format!("随声练/{}", env!("CARGO_PKG_VERSION"));
         if REPO_URL.is_empty() { assert_eq!(ua, v) } else { assert_eq!(ua, format!("{v} (+{REPO_URL})")) }
     }
 

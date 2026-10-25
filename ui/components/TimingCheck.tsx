@@ -11,21 +11,18 @@ import { checkOutputTiming, getOutputTiming, resetOutputTiming, takePlaying, typ
 const CLICKS = 24;
 const BEAT_S = 60 / 100;
 
-/** "AirPods Pro are", "LG Monitor is" (a device name read as plural when it ends in s) */
-const is = (name: string) => /s$/i.test(name.trim()) ? "are" : "is";
-
 /** What a check found, in words. */
 export function timingSaid(name: string, r: TimingResult) {
   if (r.confirm) return r.before_ms != null
-    ? `That came out at ${r.measured_ms} ms, which doesn’t agree with the check before (${r.before_ms} ms). One more time to confirm.`
-    : `You hear it ${r.measured_ms} ms after it’s played (macOS says ${r.reported_ms} ms). One more time to confirm.`;
+    ? `本次测得 ${r.measured_ms} 毫秒，与上次的 ${r.before_ms} 毫秒不一致。请再测一次确认。`
+    : `声音在播放 ${r.measured_ms} 毫秒后传到你耳中（macOS 报告为 ${r.reported_ms} 毫秒）。请再测一次确认。`;
   const c = r.correction_ms ?? 0;
-  if (Math.abs(c) < 20) return `${name} ${is(name)} on time: within ${Math.abs(c)} ms of what OnKey assumed.`;
-  return `${name} ${is(name)} ${Math.abs(c)} ms ${c > 0 ? "behind" : "ahead of"} what OnKey assumed; adjusted.`;
+  if (Math.abs(c) < 20) return `${name} 的延迟与随声练的预估一致，误差在 ${Math.abs(c)} 毫秒以内。`;
+  return `${name} 比随声练预估的延迟${c > 0 ? "更长" : "更短"} ${Math.abs(c)} 毫秒，已据此校准。`;
 }
 
 /** How to tap: in rhythm, not reacting to each click (a reaction comes 150+ ms late and uneven). */
-const HOW = "Tap along in rhythm, like clapping to a beat. Don’t wait to hear each click: keep time with them.";
+const HOW = "跟着节拍点击，就像随节奏拍手。不要等听到每一声点击后再反应，请保持节拍。";
 
 type Progress = { taps: number; progress: number };
 
@@ -138,8 +135,8 @@ export function TimingCheck() {
     try {
       const got = await runCheck(n => setRun(r => r && { ...r, taps: n }), p => setRun(r => r && { ...r, progress: p }), a.signal);
       if (got) setResult({ uid, r: await checkOutputTiming(uid, got) });
-    } catch (e) {
-      setResult({ uid, r: { error: `The check couldn’t play its clicks (${e}).` } });
+    } catch {
+      setResult({ uid, r: { error: "校准音无法播放，请检查音频输出设备后重试。" } });
     } finally {
       void takePlaying(false);
       abort.current = null; setRun(null);
@@ -153,48 +150,47 @@ export function TimingCheck() {
 
   return (
     <>
-      <h2 id="output-timing" className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">Your output</h2>
+      <h2 id="output-timing" className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">音频输出</h2>
       <section className="glass overflow-hidden rounded-3xl">
         <div className="flex items-start justify-between gap-6 px-5 py-4">
           <div className="min-w-0">
             <div className="text-sm font-medium text-ink-100">
-              {TIMING_CHECK_VERIFIED ? "" : <span className="mr-1.5 rounded bg-amber-300/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-200">Experimental</span>}
-              Check timing on {o.name || "this output"}
+              {TIMING_CHECK_VERIFIED ? "" : <span className="mr-1.5 rounded bg-amber-300/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-200">实验功能</span>}
+              校准 {o.name || "此输出设备"}
             </div>
             <p className="mt-1 text-xs text-ink-400">
               {checked
-                ? <>Checked by you: OnKey allows {o.heard_ms} ms for the music to reach your ears here (macOS says {o.reported_ms} ms).</>
-                : <>OnKey allows {o.reported_ms} ms for the music to reach your ears here, as macOS says. Bluetooth headphones often
-                    take longer than macOS reports, which makes the lyrics and notes early. Tap along to a click to measure it (twice: the two must agree).</>}
+                ? <>已通过手动校准：随声练为此设备的声音传播预留了 {o.heard_ms} 毫秒（macOS 报告为 {o.reported_ms} 毫秒）。</>
+                : <>根据 macOS 的报告，随声练为此设备的声音传播预留了 {o.reported_ms} 毫秒。蓝牙耳机的实际延迟通常更长，可能导致歌词和音符显示过早。跟着节拍点击即可测量延迟（需要测两次，且两次结果应一致）。</>}
               {!running && <span className="mt-1 block text-ink-300">{HOW}</span>}
-              {o.music_playing && !running ? <span className="text-amber-200"> Pause the music first.</span> : null}
+              {o.music_playing && !running ? <span className="text-amber-200">请先暂停音乐。</span> : null}
             </p>
           </div>
           {!running && (
             <div className="flex shrink-0 gap-2">
-              {checked && <button onClick={reset} className={button}>Reset</button>}
+              {checked && <button onClick={reset} className={button}>重置</button>}
               <button onClick={start} disabled={!!o.music_playing} className={checked ? button
                 : "shrink-0 rounded-lg bg-accent-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-accent-400 disabled:opacity-40"}>
-                {shown?.confirm ? "Check again" : checked ? "Redo" : "Check timing"}
+                {shown?.confirm ? "再次确认" : checked ? "重新校准" : "开始校准"}
               </button>
             </div>
           )}
         </div>
         {run && (
-          <div data-tap-pad role="button" tabIndex={-1} aria-label="Tap with each click"
+          <div data-tap-pad role="button" tabIndex={-1} aria-label="听到每次节拍时点击"
                className="mx-5 mb-4 select-none rounded-2xl border border-white/8 bg-white/4 px-5 py-6 text-center">
-            <div className="text-sm font-medium text-ink-100">Tap Space (or click here) along with the clicks, in rhythm</div>
-            <p className="mt-1 text-xs text-ink-400">{run.progress < 0.35 ? HOW : "Keep time to the end, listening rather than watching. Esc stops."}</p>
+            <div className="text-sm font-medium text-ink-100">跟着节拍按空格键或点击此处</div>
+            <p className="mt-1 text-xs text-ink-400">{run.progress < 0.35 ? HOW : "听节拍并保持到结束，不要一直盯着画面。按 Esc 停止。"}</p>
             <div className="tabular mt-3 text-2xl font-semibold text-ink-100">{run.taps}</div>
             <div className="mx-auto mt-3 h-1 max-w-xs overflow-hidden rounded-full bg-white/6">
               <div className="h-full bg-accent-400 transition-[width] duration-100 ease-linear" style={{ width: `${run.progress * 100}%` }} />
             </div>
-            <button onClick={() => abort.current?.abort()} className="mt-4 text-xs text-ink-400 transition hover:text-ink-100">Cancel</button>
+            <button onClick={() => abort.current?.abort()} className="mt-4 text-xs text-ink-400 transition hover:text-ink-100">取消</button>
           </div>
         )}
         {shown && !running && (
           <div className={`flex items-start justify-between gap-6 border-t border-white/6 px-5 py-3 text-sm ${shown.error ? "text-amber-200" : "text-ink-100"}`}>
-            <span role="status">{shown.error ?? timingSaid(o.name || "This output", shown)}</span>
+            <span role="status">{shown.error ?? timingSaid(o.name || "此输出设备", shown)}</span>
           </div>
         )}
       </section>

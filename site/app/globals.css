@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
-/* OnKey's identity: dark ink, one violet accent, pitch colours that mean something (on the note / close / off).
-   Dark is the default, as in the app; a light palette follows the reader's system setting. */
+/* 延续应用的深色底色、紫色主色与音高状态色；浅色主题跟随系统设置。 */
 :root {
   --bg: #07080c;
   --bg-raised: #0b0d13;
@@ -70,8 +69,8 @@
   --color-singer: var(--singer);
   --color-you: var(--you);
   --color-score: var(--score);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 html { scroll-padding-top: 5rem; }

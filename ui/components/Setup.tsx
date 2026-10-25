@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getMics, setupControl, setupDone, setupLevel, setupMeter, setupOpenSettings, setupRequest, setupStatus, type AppPerm, type AskAnswer, type Perm, type SetupStatus } from "@/lib/session";
 
-const STEPS = ["Welcome", "Permissions", "Music apps", "Mic check", "Ready"] as const;
+const STEPS = ["欢迎", "权限", "音乐应用", "麦克风测试", "完成"] as const;
 
 export default function Setup({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState(0);
@@ -27,8 +27,8 @@ export default function Setup({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/90 px-6">
-      <div className="glass w-full max-w-lg animate-rise rounded-3xl px-8 pt-7 pb-6 shadow-2xl shadow-black/50" role="dialog" aria-label="Set up OnKey">
-        <ol className="mb-6 flex items-center gap-2" aria-label="Setup steps">
+      <div className="glass w-full max-w-lg animate-rise rounded-3xl px-8 pt-7 pb-6 shadow-2xl shadow-black/50" role="dialog" aria-label="设置随声练">
+        <ol className="mb-6 flex items-center gap-2" aria-label="设置步骤">
           {STEPS.map((s, i) => (
             <li key={s} className="flex flex-1 flex-col gap-1.5">
               <span className={`h-1 rounded-full transition-colors ${i <= step ? "bg-accent-400" : "bg-white/8"}`} />
@@ -67,27 +67,27 @@ function Quiet({ children, onClick }: { children: React.ReactNode; onClick: () =
 function Welcome({ macosOk, onNext, onLater }: { macosOk: boolean; onNext: () => void; onLater: () => void }) {
   return (
     <>
-      <h2 className="text-2xl font-semibold tracking-tight">Welcome to OnKey</h2>
-      <p className="mt-2 text-ink-300">Learn to sing the songs you love, with the music you already play.</p>
+      <h2 className="text-2xl font-semibold tracking-tight">欢迎使用随声练</h2>
+      <p className="mt-2 text-ink-300">跟着你正在播放的歌曲练习演唱。</p>
       <ul className="mt-5 space-y-3 text-sm leading-relaxed text-ink-200">
         <Point icon="M9 18V6l11-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z">
-          Play a song in your music app, as you always do. OnKey listens to the music playing on your Mac and follows along by itself.
+          像平时一样在音乐应用中播放歌曲。随声练会聆听 Mac 正在播放的音乐并自动跟随。
         </Point>
         <Point icon="M3 14c2.5 0 2.5-6 5-6s2.5 8 5 8 2.5-10 5-10 2 4 3 4">
-          The first time a song plays, OnKey learns the singer’s melody. From then on you see every note coming, and where you’re sharp or flat.
+          每首歌首次播放时，随声练会学习演唱旋律。之后练习时，你可以提前看到音符，并查看自己的音高偏差。
         </Point>
         <Point icon="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z">
-          OnKey never saves the music it listens to. Your singing recordings stay on this Mac so you can hear your takes back. To name a new song, listening mode sends Apple’s Shazam a short fingerprint of the music app’s sound (not the audio).
+          随声练不会保存听到的音乐。你的演唱录音保存在这台 Mac 上，供你回听。听歌识曲时，应用会将音乐的短音频指纹（不是音频本身）发送给 Apple 的 Shazam，以识别新歌曲。
         </Point>
       </ul>
       {!macosOk && (
         <p className="mt-5 rounded-xl bg-close/10 px-4 py-3 text-sm text-close">
-          OnKey needs macOS 14.2 or later to hear other apps. Update macOS in System Settings → General → Software Update.
+          随声练需要 macOS 14.2 或更高版本才能听到其他应用的声音。请前往“系统设置 → 通用 → 软件更新”升级 macOS。
         </p>
       )}
       <div className="mt-7 flex items-center justify-between">
-        <Quiet onClick={onLater}>Set up later</Quiet>
-        <Primary onClick={onNext} disabled={!macosOk}>Get started</Primary>
+        <Quiet onClick={onLater}>稍后设置</Quiet>
+        <Primary onClick={onNext} disabled={!macosOk}>开始设置</Primary>
       </div>
     </>
   );
@@ -117,22 +117,22 @@ function Permissions({ mic, audio, onAudioAllowed, refresh, onNext, canContinue 
   };
   return (
     <>
-      <h2 className="text-2xl font-semibold tracking-tight">Two permissions</h2>
-      <p className="mt-2 text-sm text-ink-300">macOS asks once for each. You can change them later in System Settings → Privacy &amp; Security.</p>
+      <h2 className="text-2xl font-semibold tracking-tight">需要两项权限</h2>
+      <p className="mt-2 text-sm text-ink-300">macOS 会分别询问一次。之后可在“系统设置 → 隐私与安全性”中更改。</p>
       <div className="mt-5 space-y-3">
-        <PermRow title="Microphone" why="To hear you sing." state={mic} busy={asking === "mic"}
+        <PermRow title="麦克风" why="用于听到你的演唱。" state={mic} busy={asking === "mic"}
                  onAsk={() => ask("mic")} onSettings={() => setupOpenSettings("mic")}
-                 settingsHint="Turn on OnKey under Microphone." />
-        <PermRow title="System audio recording" why="To hear the music playing on your Mac, so OnKey can learn the melody. OnKey never saves the music or sends it; to name a song it doesn't know, a short fingerprint of it (not the audio) can go to Apple's Shazam."
+                 settingsHint="在“麦克风”中允许随声练。" />
+        <PermRow title="系统音频录制" why="用于听到 Mac 上播放的音乐，以学习歌曲旋律。随声练不会保存或发送音乐；识别新歌曲时，短音频指纹（不是音频本身）可能会发送给 Apple 的 Shazam。"
                  state={audio} busy={asking === "audio"} onAsk={() => ask("audio")} onSettings={() => setupOpenSettings("audio")}
-                 settingsHint="Open Screen & System Audio Recording and turn on OnKey under System Audio Recording Only." />
+                 settingsHint="打开“屏幕与系统音频录制”，并在“仅系统音频录制”下允许随声练。" />
       </div>
       <p className="mt-4 text-xs leading-relaxed text-ink-500">
-        If macOS asks to quit and reopen OnKey after you allow something, do. Setup carries on where you left off.
+        如果 macOS 在授权后要求退出并重新打开随声练，请按提示操作。设置会从上次中断的位置继续。
       </p>
       <div className="mt-6 flex items-center justify-between">
-        <Quiet onClick={onNext}>{canContinue ? "" : "Skip for now"}</Quiet>
-        <Primary onClick={onNext} disabled={!canContinue}>Continue</Primary>
+        <Quiet onClick={onNext}>{canContinue ? "" : "暂时跳过"}</Quiet>
+        <Primary onClick={onNext} disabled={!canContinue}>继续</Primary>
       </div>
     </>
   );
@@ -156,18 +156,21 @@ function PermRow({ title, why, state, busy, onAsk, onSettings, settingsHint }: {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-medium text-ink-100">{title}</span>
-            {granted ? <span className="text-xs font-medium text-good">Allowed</span>
+            {granted ? <span className="text-xs font-medium text-good">已允许</span>
               : blocked ? (
-                <button onClick={onSettings} className="rounded-lg bg-white/8 px-3 py-1.5 text-xs font-medium text-ink-100 transition hover:bg-white/12">Open System Settings</button>
+                <button onClick={onSettings} className="rounded-lg bg-white/8 px-3 py-1.5 text-xs font-medium text-ink-100 transition hover:bg-white/12">打开系统设置</button>
               ) : (
-                <button onClick={onAsk} disabled={busy}
-                        className="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent-400 disabled:opacity-50">
-                  {busy ? "Asking…" : "Allow"}
-                </button>
+                <span className="flex items-center gap-2">
+                  <span className="text-xs text-ink-400">{state === "unknown" ? "状态未知" : "尚未请求"}</span>
+                  <button onClick={onAsk} disabled={busy}
+                          className="rounded-lg bg-accent-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent-400 disabled:opacity-50">
+                    {busy ? "正在请求…" : "允许"}
+                  </button>
+                </span>
               )}
           </div>
           <p className="mt-1 text-sm text-ink-400">{why}</p>
-          {blocked && <p className="mt-1.5 text-xs text-off/80">{state === "restricted" ? "Your Mac's settings don't allow this. Ask whoever manages it." : settingsHint}</p>}
+          {blocked && <p className="mt-1.5 text-xs text-off/80">{state === "restricted" ? "这台 Mac 的设置禁止此操作，请联系设备管理员。" : settingsHint}</p>}
         </div>
       </div>
     </div>
@@ -205,45 +208,45 @@ function MusicApps({ st, refresh, onNext }: { st: SetupStatus | null; refresh: (
   const listenOnly = async () => { await setupControl(false); refresh(); onNext(); };
   // macOS's own answer when it has one; else what asking said (no answer yet, or the app isn't open)
   const shown = (now?: AppPerm, ask?: AskAnswer): AskAnswer | undefined =>
-    now === "granted" || now === "denied" || now === "not_installed" || !ask || ask === "not_asked" ? now : ask;
+    now === "granted" || now === "denied" || now === "restricted" || now === "not_installed" || !ask || ask === "not_asked" ? now : ask;
   const apps: [string, AskAnswer | undefined][] = [["Spotify", shown(st?.control?.spotify, asked?.spotify)],
                                                    ["Apple Music", shown(st?.control?.music, asked?.music)]];
   const waiting = chose === "allowed" && apps.some(([, p]) => p === "waiting");
   return (
     <>
       <div className="flex items-center gap-2">
-        <h2 className="text-2xl font-semibold tracking-tight">Let OnKey follow Spotify and Apple Music</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">让随声练跟随 Spotify 和 Apple Music</h2>
       </div>
-      <span className="mt-2 inline-block rounded-full bg-accent-500/14 px-2 py-0.5 text-[11px] font-medium text-accent-300">Recommended</span>
+      <span className="mt-2 inline-block rounded-full bg-accent-500/14 px-2 py-0.5 text-[11px] font-medium text-accent-300">推荐</span>
       <p className="mt-3 text-sm text-ink-300">
-        So lyrics and notes are in the right place from the first second, and OnKey can play and restart songs for you.
+        这样歌词和音符从歌曲开始时就能对齐，随声练也可以为你播放或重新开始歌曲。
       </p>
       <p className="mt-2 text-xs leading-relaxed text-ink-500">
-        It can read what’s playing and where, and play, pause and seek. Nothing else. macOS asks once for each app.
+        随声练只会读取正在播放的歌曲及进度，并控制播放、暂停和跳转。macOS 会分别为每个应用询问一次。
       </p>
       <div className="mt-5 space-y-2">
         {apps.filter(([, p]) => p !== "not_installed").map(([app, p]) => <AppRow key={app} app={app} state={p} />)}
       </div>
       {chose === "asking" && slow && (
         <p className="mt-4 text-xs leading-relaxed text-ink-400" role="status">
-          Waiting for macOS. If it’s asking about Spotify or Apple Music (its question can open behind this window), answer it.
-          No question? Carry on: macOS asks the first time you play a song there.
+          正在等待 macOS 响应。如果 Spotify 或 Apple Music 的授权窗口被挡在后面，请切换到该窗口并作出选择。
+          如果没有看到询问，可以继续；首次在该应用中播放歌曲时，macOS 会再次询问。
         </p>
       )}
       {waiting && (
         <p className="mt-4 text-xs leading-relaxed text-ink-400" role="status">
-          macOS hasn’t had an answer yet. If its question is showing, answer it; otherwise it asks the first time you play a song there.
+          macOS 尚未返回授权结果。如果授权窗口已显示，请作出选择；否则首次在该应用中播放歌曲时会再次询问。
         </p>
       )}
       <div className="mt-6 flex items-center justify-between">
-        <Quiet onClick={listenOnly}>{chose === "allowed" ? "" : "Listen only"}</Quiet>
+        <Quiet onClick={listenOnly}>{chose === "allowed" ? "" : "仅听歌，不控制应用"}</Quiet>
         {chose === "allowed"
-          ? <Primary onClick={onNext}>Continue</Primary>
+          ? <Primary onClick={onNext}>继续</Primary>
           : chose === "asking" && slow
-          ? <Primary onClick={carryOn}>Carry on</Primary>
+          ? <Primary onClick={carryOn}>继续等待</Primary>
           : <button ref={allowRef} onClick={allow} disabled={chose === "asking"}
                     className="rounded-xl bg-accent-500 px-5 py-2.5 text-sm font-semibold text-white outline-none transition hover:bg-accent-400 focus-visible:ring-2 focus-visible:ring-accent-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900 disabled:opacity-50">
-              {chose === "asking" ? "Asking…" : "Allow"}
+              {chose === "asking" ? "正在请求…" : "允许"}
             </button>}
       </div>
     </>
@@ -253,8 +256,9 @@ function MusicApps({ st, refresh, onNext }: { st: SetupStatus | null; refresh: (
 function AppRow({ app, state }: { app: string; state?: AskAnswer }) {
   const granted = state === "granted";
   const denied = state === "denied";
-  const label = granted ? "Allowed" : denied ? "Not allowed" : state === "not_running" ? "macOS asks when you first play a song in it"
-    : state === "waiting" ? "No answer yet" : state === "ask" ? "Not asked yet" : "";
+  const restricted = state === "restricted";
+  const label = granted ? "已允许" : denied ? "未允许" : restricted ? "受设备管理策略限制" : state === "not_running" ? "首次在此应用播放歌曲时询问"
+    : state === "waiting" ? "尚未收到答复" : state === "ask" || state === "not_asked" ? "尚未请求" : state === "unknown" ? "状态未知" : "";
   return (
     <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${granted ? "border-good/25 bg-good/5" : "border-white/8 bg-white/3"}`}>
       <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${granted ? "bg-good/20 text-good" : denied ? "bg-off/15 text-off" : "bg-white/8 text-ink-400"}`} aria-hidden>
@@ -264,7 +268,7 @@ function AppRow({ app, state }: { app: string; state?: AskAnswer }) {
       </span>
       <span className="flex-1 font-medium text-ink-100">{app}</span>
       {denied
-        ? <button onClick={() => setupOpenSettings("automation")} className="rounded-lg bg-white/8 px-3 py-1.5 text-xs font-medium text-ink-100 transition hover:bg-white/12">Open System Settings</button>
+        ? <button onClick={() => setupOpenSettings("automation")} className="rounded-lg bg-white/8 px-3 py-1.5 text-xs font-medium text-ink-100 transition hover:bg-white/12">打开系统设置</button>
         : <span className={`text-xs ${granted ? "font-medium text-good" : "text-ink-400"}`}>{label}</span>}
     </div>
   );
@@ -311,28 +315,28 @@ function MicCheck({ micOk, onNext, onBack }: { micOk: boolean; onNext: () => voi
   const pct = Math.max(0, Math.min(1, (db + 80) / 70));
   return (
     <>
-      <h2 className="text-2xl font-semibold tracking-tight">Can OnKey hear you?</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">随声练能听到你的声音吗？</h2>
       <p className="mt-2 text-sm text-ink-300">
-        {!micOk ? "OnKey needs the microphone first: go back to allow it."
-          : device === null ? "No microphone is connected. Connect one, or choose one in System Settings → Sound → Input."
-          : "Say something, or sing a note."}
+        {!micOk ? "请先返回并允许随声练使用麦克风。"
+          : device === null ? "没有连接麦克风。请连接一个，或前往“系统设置 → 声音 → 输入”选择设备。"
+          : "说句话，或唱一个音符。"}
       </p>
-      {micOk && device && <p className="mt-1 text-xs text-ink-500">Listening to {device}. You can choose another in Settings.</p>}
+      {micOk && device && <p className="mt-1 text-xs text-ink-500">当前使用：{device}。你可以在设置中选择其他设备。</p>}
       <div className="mt-6 flex items-center gap-4">
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/6" role="meter" aria-label="Microphone level" aria-valuemin={-80} aria-valuemax={-10} aria-valuenow={Math.round(db)}>
+        <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/6" role="meter" aria-label="麦克风音量" aria-valuemin={-80} aria-valuemax={-10} aria-valuenow={Math.round(db)}>
           <div className={`h-full rounded-full transition-[width] duration-75 ${heard ? "bg-good" : "bg-accent-400"}`} style={{ width: `${pct * 100}%` }} />
         </div>
         <span className={`w-28 text-right text-sm font-medium ${heard ? "text-good" : "text-ink-500"}`}>
-          {heard ? "Heard you" : running ? "Listening…" : !micOk ? "Not allowed" : !failed && device !== null ? "Starting…" : "No microphone"}
+          {heard ? "已听到" : running ? "正在监听…" : !micOk ? "未授权" : !failed && device !== null ? "正在启动…" : "没有麦克风"}
         </span>
       </div>
       <p className="mt-4 text-xs leading-relaxed text-ink-500">
-        Headphones give the steadiest scores. Laptop speakers work too: OnKey takes the music out of what the mic hears.
+        使用耳机时音准评估更稳定。也可以使用笔记本扬声器：随声练会从麦克风采集的声音中消除音乐。
       </p>
       <div className="mt-7 flex items-center justify-between">
-        <Quiet onClick={onNext}>{heard ? "" : "Skip"}</Quiet>
-        {micOk ? <Primary onClick={onNext} disabled={!heard}>Continue</Primary>
-          : <Primary onClick={onBack}>Back to permissions</Primary>}
+        <Quiet onClick={onNext}>{heard ? "" : "跳过"}</Quiet>
+        {micOk ? <Primary onClick={onNext} disabled={!heard}>继续</Primary>
+          : <Primary onClick={onBack}>返回权限设置</Primary>}
       </div>
     </>
   );
@@ -344,16 +348,15 @@ function Ready({ onFinish }: { onFinish: () => void }) {
       <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-good/15 text-good">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
       </div>
-      <h2 className="text-center text-2xl font-semibold tracking-tight">You're set</h2>
+      <h2 className="text-center text-2xl font-semibold tracking-tight">设置完成</h2>
       <p className="mx-auto mt-2 max-w-sm text-center text-ink-300">
-        Play a song in your music app and start singing. The first play of each song teaches OnKey the melody.
+        在音乐应用中播放一首歌，然后开始演唱。每首歌首次播放时，随声练会学习其旋律。
       </p>
       <p className="mx-auto mt-3 max-w-sm text-center text-sm text-ink-400">
-        Sing at a comfortable volume: OnKey scores your pitch, not how loud you are. Rest when your voice tires, and stop
-        if your throat hurts.
+        用舒适的音量演唱：随声练评估音高，不评估音量。嗓子累了就休息，感到疼痛时请停止。
       </p>
       <div className="mt-7 flex justify-center">
-        <Primary onClick={onFinish}>Start singing</Primary>
+        <Primary onClick={onFinish}>开始练习</Primary>
       </div>
     </>
   );

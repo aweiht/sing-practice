@@ -1,10 +1,12 @@
 {
-  "name": "onkey",
+  "name": "sing-practice",
   "private": true,
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",
-    "build": "tauri build"
+    "build": "tauri build",
+    "brand:generate": "python3 scripts/generate-brand-assets.py",
+    "brand:check": "python3 scripts/generate-brand-assets.py --check"
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.5.0"

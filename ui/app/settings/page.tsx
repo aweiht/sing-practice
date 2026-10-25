@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo, Nav } from "@/components/Nav";
 import { reportProblem } from "@/components/ReportProblem";
-import { checkForUpdate, restartToUpdate, setAutoUpdate, useUpdate } from "@/lib/update";
 import { allowControl, getMics, getSettings, openLink, setMic, setSetting, setupControl, setYouTube, type Mics, type Settings } from "@/lib/session";
 
 /** Which microphone OnKey listens to: automatic (the Mac's input, as chosen in System Settings → Sound) or one
@@ -27,23 +26,22 @@ function MicPicker() {
   const pick = async (uid: string) => { await setMic(uid === "" ? null : uid); setM(await getMics()); };
   return (
     <>
-      <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">Microphone</h2>
+      <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">麦克风</h2>
       <section className="glass overflow-hidden rounded-3xl">
         <div className="flex items-start justify-between gap-6 px-5 py-4">
           <div className="min-w-0">
-            <label htmlFor="set-mic" className="text-sm font-medium text-ink-100">Listen to</label>
+            <label htmlFor="set-mic" className="text-sm font-medium text-ink-100">使用设备</label>
             <p className="mt-1 text-xs text-ink-400">
-              {m.chosen ? <>Now: {m.chosen.name}.</> : <span className="text-amber-200">No microphone is connected.</span>}{" "}
-              {missing ? "The one you chose isn’t connected, so OnKey uses the Mac’s own input until it is. " : ""}
-              Automatic uses your Mac’s input (System Settings → Sound), but not Bluetooth headphones’ mic while the Mac has
-              its own, so the music stays at full quality in them.
+              {m.chosen ? <>当前设备：{m.chosen.name}。</> : <span className="text-amber-200">未连接麦克风。</span>}{" "}
+              {missing ? "所选麦克风当前未连接，连接前随声练会使用 Mac 的默认输入设备。" : ""}
+              自动模式使用 Mac 当前的输入设备（系统设置 → 声音）。如果 Mac 已有内置麦克风，蓝牙耳机的麦克风不会启用，音乐可保持完整音质。
             </p>
           </div>
           <select id="set-mic" value={m.preferred ?? ""} onChange={e => pick(e.target.value)}
                   className="mt-0.5 max-w-56 shrink-0 rounded-lg border border-white/8 bg-white/4 px-2.5 py-1.5 text-sm text-ink-100 outline-none focus:border-accent-400">
-            <option value="">Automatic</option>
+            <option value="">自动选择</option>
             {m.devices.map(d => <option key={d.uid} value={d.uid}>{d.name}</option>)}
-            {missing && <option value={m.preferred!}>Not connected</option>}
+            {missing && <option value={m.preferred!}>未连接</option>}
           </select>
         </div>
       </section>
@@ -51,38 +49,17 @@ function MicPicker() {
   );
 }
 
-/** Updates: this version, "Check for updates automatically" (on), and "Check now". */
-function Updates() {
-  const [u, setU] = useUpdate();
-  const [busy, setBusy] = useState(false);
-  if (!u) return null;
-  const check = async () => { setBusy(true); try { setU(await checkForUpdate()); } finally { setBusy(false); } };
-  const line = !u.supported ? "Development build: it doesn’t update itself."
-    : u.waiting ? `OnKey ${u.available} is installed when this song is over, then OnKey restarts.`
-    : u.state === "ready" ? `OnKey ${u.available} is ready. Restart to update, or it’s installed when you quit.`
-    : u.state === "downloading" ? `Downloading OnKey ${u.available}…`
-    : u.state === "checking" ? "Checking…"
-    : u.state === "current" ? "You have the latest version."
-    : u.state === "error" ? "Couldn’t check for updates just now."
-    : "";
+/** Auto-update is disabled for unsigned builds; users can inspect the source and version at the repository. */
+function VersionInfo({ version }: { version?: string }) {
   return (
-    <>
-      <div className="flex items-start justify-between gap-6 border-b border-white/6 px-5 py-4">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-ink-100">OnKey {u.version}</div>
-          {line && <p className="mt-1 text-xs text-ink-400">{line}</p>}
-        </div>
-        {u.supported && (u.state === "ready" && !u.waiting
-          ? <button onClick={async () => setU(await restartToUpdate())}
-                    className="shrink-0 rounded-lg bg-accent-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-accent-400">Restart to update</button>
-          : <button onClick={check} disabled={busy || u.state === "checking" || u.state === "downloading" || u.waiting}
-                    className="shrink-0 rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-sm text-ink-100 transition hover:bg-white/8 disabled:opacity-40">Check now</button>)}
+    <div className="flex items-start justify-between gap-6 border-b border-white/6 px-5 py-4">
+      <div className="min-w-0">
+        <div className="text-sm font-medium text-ink-100">随声练 {version ?? "版本未知"}</div>
+        <p className="mt-1 text-xs text-ink-400">此版本不会自动更新。请前往项目仓库查看源码和可用版本。</p>
       </div>
-      {u.supported && (
-        <Row id="set-auto-update" title="Check for updates automatically" on={u.auto} onChange={async on => setU(await setAutoUpdate(on))}
-             sub="Once a day OnKey asks GitHub for a newer version and downloads it in the background. It never interrupts a song: it’s installed when you restart or quit." />
-      )}
-    </>
+      <button onClick={() => void openLink("https://github.com/aweiht/sing-practice")}
+              className="shrink-0 rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-sm text-ink-100 transition hover:bg-white/8">查看项目仓库</button>
+    </div>
   );
 }
 
@@ -111,7 +88,7 @@ export default function SettingsPage() {
   useEffect(() => { getSettings().then(setS).catch(() => setS(null)); }, []);
   // listening only: Spotify, Apple Music and YouTube all off (settings.rs `listen_only`)
   const listenOnly = !!s?.listen_only;
-  const change = async (key: Exclude<keyof Settings, "small_mac" | "listen_only">, on: boolean) => {
+  const change = async (key: Exclude<keyof Settings, "version" | "small_mac" | "listen_only">, on: boolean) => {
     if (key === "youtube") await setYouTube(on);
     else if (key === "keep_models" || key === "battery_30fps" || key === "voice_breaks" || key === "shazam" || key === "show_lyrics") await setSetting(key, on);
     else if ((key === "control_spotify" || key === "control_music") && !on && s && !s.listening) {
@@ -129,102 +106,99 @@ export default function SettingsPage() {
     <div className="min-h-dvh bg-[radial-gradient(1200px_500px_at_50%_-10%,rgba(124,108,246,.10),transparent)]">
       <header data-tauri-drag-region className="app-header flex items-center gap-5 px-6 pt-4 pb-3"><Logo /><Nav /></header>
       <main className="mx-auto max-w-2xl px-6 pb-16">
-        <h1 className="mt-6 text-3xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight">设置</h1>
         {!s ? <div className="glass mt-6 h-40 rounded-3xl shimmer" /> : (
           <>
-            <h2 className="mt-6 mb-2 px-1 text-sm font-medium text-ink-200">Let OnKey control</h2>
+            <h2 className="mt-6 mb-2 px-1 text-sm font-medium text-ink-200">允许随声练控制</h2>
             <p className="mb-3 px-1 text-xs text-ink-400">
               {s.listening
-                ? "On by default: OnKey reads what’s playing and where (exact, instant positions), and can play, pause, seek and start songs. Nothing else. macOS asks once for each."
-                : "OnKey follows Spotify and Apple Music by asking them, so it controls them already."}
+                ? "默认开启后，随声练可读取当前播放内容和精确进度，并控制播放、暂停、定位和启动歌曲。macOS 会分别请求授权。"
+                : "随声练通过向 Spotify 和 Apple Music 查询播放信息来跟随歌曲，并可控制这些应用。"}
             </p>
             <section className="glass overflow-hidden rounded-3xl">
               <Row id="set-spotify" title="Spotify" on={!s.listening || s.control_spotify} onChange={on => change("control_spotify", on)}
-                   sub="Start, pause and skip songs in Spotify from OnKey." />
+                   sub="在随声练中启动、暂停或切换 Spotify 歌曲。" />
               <Row id="set-music" title="Apple Music" on={!s.listening || s.control_music} onChange={on => change("control_music", on)}
-                   sub="The same for the Music app (songs in your library)." />
-              <Row id="set-youtube" title="YouTube in your browser" badge="Bigger permission" warn on={s.youtube} onChange={on => change("youtube", on)}
-                   sub="Lets OnKey read and control the YouTube tab in Chrome, Brave, Edge or Safari. Needs “Allow JavaScript from Apple Events” turned on in the browser." />
+                   sub="控制“音乐”App 中的歌曲，也包括你的资料库。" />
+              <Row id="set-youtube" title="浏览器中的 YouTube" badge="需要较高权限" warn on={s.youtube} onChange={on => change("youtube", on)}
+                   sub="允许随声练读取并控制 Chrome、Brave、Edge 或 Safari 中的 YouTube 标签页。需要在浏览器设置中启用“允许来自 Apple 事件的 JavaScript”。" />
             </section>
             {s.listening && (
               <p role="status" className="mt-3 px-1 text-xs text-ink-400">
                 {listenOnly
-                  ? <>OnKey is listening only: it follows songs by their sound, and doesn’t touch any app. Positions are a little
-                      less exact, and it can’t start or restart songs. Turning an app off here doesn’t take back macOS’s
-                      permission: that’s in System Settings → Privacy &amp; Security → Automation.</>
-                  : "With all of these off, OnKey follows songs by their sound alone."}
+                  ? <>随声练当前仅监听声音来跟随歌曲，不会操作其他 App。播放进度可能不够精确，也无法启动或重新播放歌曲。在这里关闭 App 控制不会撤销 macOS 权限；请前往“系统设置 → 隐私与安全性 → 自动化”管理权限。</>
+                  : "关闭以上所有选项后，随声练只会通过声音跟随歌曲。"}
               </p>
             )}
             <section className="glass mt-8 overflow-hidden rounded-3xl">
-              <Row id="set-shazam" title="Use Shazam to name new songs" on={s.shazam !== false} onChange={on => change("shazam", on)}
-                   sub="Songs you’ve sung before are recognised on this Mac. New songs from Spotify and Apple Music are named by the app itself while OnKey may control it; Shazam names the rest from a short fingerprint of the sound (not the audio). When off, nothing is sent to Apple and only songs already learned on this Mac are recognised there." />
+              <Row id="set-shazam" title="使用 Shazam 识别新歌曲" on={s.shazam !== false} onChange={on => change("shazam", on)}
+                   sub="你以前唱过的歌曲会在这台 Mac 上识别。随声练控制 Spotify 和 Apple Music 时，新歌曲由对应 App 提供名称；其他歌曲由 Shazam 根据声音的短音频指纹（不含音频本身）识别。关闭后不会向 Apple 发送数据，这里只能识别本机已学习的歌曲。" />
               {s.listening && !s.control_spotify && !s.control_music && s.shazam === false && (
                 <p role="status" className="bg-amber-400/8 px-5 py-3 text-xs text-amber-200">
-                  With Spotify and Apple Music off, new songs can only be learned with Shazam on. Songs already learned still work.
+                  Spotify 和 Apple Music 控制均已关闭。只有开启 Shazam 才能学习新歌曲；本机已学习的歌曲仍可使用。
                 </p>
               )}
             </section>
-            <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">Lyrics</h2>
+            <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">歌词</h2>
             <section className="glass overflow-hidden rounded-3xl">
-              <Row id="set-show-lyrics" title="Show lyrics" on={s.show_lyrics !== false} onChange={on => change("show_lyrics", on)}
-                   sub="Lyrics come from LRCLIB, a free community lyrics database. When off, OnKey doesn’t ask LRCLIB for any, and you sing to the notes alone: the pitch guide and your score work as usual." />
+              <Row id="set-show-lyrics" title="显示歌词" on={s.show_lyrics !== false} onChange={on => change("show_lyrics", on)}
+                   sub="歌词来自免费的社区歌词库 LRCLIB。关闭后，随声练不会向 LRCLIB 请求歌词；你仍可跟着音高提示演唱并查看评分。" />
             </section>
           </>
         )}
         <MicPicker />
         {s && (
           <>
-            <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">Your voice</h2>
+            <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">声音保护</h2>
             <section className="glass overflow-hidden rounded-3xl">
-              <Row id="set-voice-breaks" title="Remind me to rest my voice" on={s.voice_breaks !== false} onChange={on => change("voice_breaks", on)}
-                   sub="After about 35 minutes of singing, a quiet reminder to take a break. A 20-minute pause from singing starts the count again." />
+              <Row id="set-voice-breaks" title="提醒我休息嗓子" on={s.voice_breaks !== false} onChange={on => change("voice_breaks", on)}
+                   sub="连续演唱约 35 分钟后会轻声提醒你休息。停止演唱 20 分钟后，计时会重新开始。" />
             </section>
-            <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">Performance</h2>
+            <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">性能</h2>
             <section className="glass overflow-hidden rounded-3xl">
-              <Row id="set-battery-30" title="Save battery while singing" on={s.battery_30fps !== false} onChange={on => change("battery_30fps", on)}
-                   sub="On battery, the notes are drawn 30 times a second instead of 60: half the drawing work for your Mac, still smooth." />
-              {!s.small_mac && <Row id="set-keep-models" title="Keep learning models ready" on={!!s.keep_models} onChange={on => change("keep_models", on)}
-                   sub="Faster learning of new songs, but uses about 1.5 GB more memory, also while you sing songs OnKey already knows. Off, they’re loaded when a new song is learned and let go after. On by default on Macs with 32 GB or more." />}
+              <Row id="set-battery-30" title="使用电池时节省电量" on={s.battery_30fps !== false} onChange={on => change("battery_30fps", on)}
+                   sub="使用电池时，每秒绘制 30 次音符（平时为 60 次），减少一半绘制工作量，同时保持画面流畅。" />
+              {!s.small_mac && <Row id="set-keep-models" title="保持学习模型就绪" on={!!s.keep_models} onChange={on => change("keep_models", on)}
+                   sub="学习新歌曲会更快，但会额外占用约 1.5 GB 内存，唱已认识的歌曲时也会占用。关闭后，只有学习新歌时才加载模型，完成后会释放。内存达到 32 GB 的 Mac 默认开启。" />}
             </section>
           </>
         )}
-        <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">About</h2>
+        <h2 className="mt-8 mb-2 px-1 text-sm font-medium text-ink-200">关于</h2>
         <section className="glass overflow-hidden rounded-3xl">
-          <Updates />
+          <VersionInfo version={s?.version} />
           <button onClick={() => reportProblem()} className="flex w-full items-center justify-between gap-6 border-b border-white/6 px-5 py-4 text-left text-sm text-ink-100 hover:bg-white/4">
             <span>
-              Report a problem
-              <span className="mt-1 block text-xs text-ink-400">Save OnKey’s logs and timings as a zip to attach to a GitHub issue. You see what’s in it first; no lyrics or audio, nothing uploaded.</span>
+              报告问题
+              <span className="mt-1 block text-xs text-ink-400">将随声练的日志和时间数据保存为 ZIP，供你附加到 GitHub 问题中。发送前可先查看文件内容；其中不含歌词或音频，也不会自动上传。</span>
             </span>
             <span aria-hidden className="text-ink-400">›</span>
           </button>
-          <button onClick={() => void openLink("https://discord.gg/afHvqTNS6r")}
+          <button onClick={() => void openLink("https://github.com/aweiht/sing-practice/issues")}
                   className="flex w-full items-center justify-between gap-6 border-b border-white/6 px-5 py-4 text-left text-sm text-ink-100 hover:bg-white/4">
             <span>
-              Join OnKey’s Discord
-              <span className="mt-1 block text-xs text-ink-400">Ask questions, report a song that’s out of step, and suggest ideas.</span>
+              帮助与问题反馈
+              <span className="mt-1 block text-xs text-ink-400">在项目问题区查看帮助、反馈歌曲识别问题或提出建议。</span>
             </span>
             <span aria-hidden className="text-ink-400">↗</span>
           </button>
           <div className="flex items-center gap-3 border-b border-white/6 px-5 py-4 text-sm text-ink-100">
             <img src="/dsmurrell.png" alt="" width={20} height={20} className="rounded" />
             <span>
-              Made by <a href="https://dsmurrell.com" onClick={e => { e.preventDefault(); void openLink("https://dsmurrell.com"); }}
-                         className="underline-offset-2 hover:underline">Daniel Murrell</a>
-              <span className="mt-1 block text-xs italic text-ink-500">Saving shower singers from themselves since 2026</span>
+              上游项目：<a href="https://github.com/dsmurrell/onkey" onClick={e => { e.preventDefault(); void openLink("https://github.com/dsmurrell/onkey"); }}
+                         className="underline-offset-2 hover:underline">OnKey（Daniel Murrell）</a>
+              <span className="mt-1 block text-xs italic text-ink-500">感谢原作者的开源项目。</span>
             </span>
           </div>
           <Link href="/licences" className="flex items-center justify-between gap-6 px-5 py-4 text-sm text-ink-100 hover:bg-white/4">
             <span>
-              Open-source licences
-              <span className="mt-1 block text-xs text-ink-400">The models, data, fonts and libraries OnKey is built on, and their licences.</span>
+              开源许可证
+              <span className="mt-1 block text-xs text-ink-400">查看随声练使用的模型、数据、字体、软件库及其许可证。</span>
             </span>
             <span aria-hidden className="text-ink-400">›</span>
           </Link>
         </section>
         <p className="mt-3 px-1 text-xs text-ink-400">
-          For personal practice at home. What OnKey learns stays on this Mac: please keep it to yourself, and don’t post
-          takes or screen recordings with the music in them.
+          随声练供个人在家练习使用。学习到的歌曲信息保存在这台 Mac 上，请妥善保管；请勿发布包含音乐的演唱记录或屏幕录像。
         </p>
       </main>
     </div>

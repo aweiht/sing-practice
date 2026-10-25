@@ -1,11 +1,20 @@
-# Changelog
+# 更新记录
 
-## 0.1.0
+## 随声练源码改版 · 2026-10-25（未发布安装包）
 
-The first public release.
+本仓库基于 OnKey 上游源码建立简体中文改版，当前交付为源码状态，不代表正式发布版本。
 
-- Learns the melody of any song playing in Spotify, Apple Music or YouTube in Chrome, the first time you play it,
-  on your Mac. Nothing is uploaded.
-- Live pitch line against the singer's notes, with synced lyrics, a score for every take and the best bits marked.
-- Takes to hear back, with your voice over the notes, and a short video of a take to share (your voice, no music).
-- Starter songs and playlist, a library of learned songs, and an in-app updater.
+- 品牌名改为「随声练」，网站、用户文档和问题反馈入口改为本项目地址。
+- 应用使用独立标识和数据目录，不读取或修改 OnKey 原版数据；自动更新关闭。
+- 当前没有中文版安装包、官网部署或自有 Apple Developer ID 签名与公证配置。
+- Shazam 新歌识别与中文歌词对齐能力尚未验证。
+
+## OnKey 上游 0.1.0（历史记录）
+
+这是上游项目对首次公开版本的说明，保留作来源记录，不表示本仓库已发布该安装包。
+
+- 在 Mac 上首次播放歌曲后学习旋律；后续播放时显示实时音高、评分和每行报告。
+- 可回听练习录音，并生成只包含人声与音高线、不含音乐的短视频。
+- 包含入门歌曲、歌单、已学习歌曲库和应用内更新程序。
+
+上游来源：Daniel Murrell 的 [dsmurrell/onkey](https://github.com/dsmurrell/onkey)。

@@ -58,17 +58,17 @@ export type LearnJob = { track_id: string; name: string; artist: string; fractio
 export const LINE_LEAD = 0.4;
 
 const LEARN_STAGE: Record<LearnJob["stage"], string> = {
-  playing: "Learning as it plays", waiting: "Waiting its turn", queued: "Waiting to learn", paused: "Waiting while you sing", separating: "Separating the singer", pitch: "Following the melody",
-  scoring: "Scoring your take", words: "Timing the words", bars: "Making the note bars", notes: "Finding each note", saving: "Saving",
+  playing: "播放时学习歌曲", waiting: "等待处理", queued: "排队等待学习", paused: "练习期间暂停", separating: "分离人声", pitch: "提取旋律",
+  scoring: "评估本次练习", words: "对齐歌词", bars: "生成音符轨迹", notes: "识别音符", saving: "正在保存",
 };
 /** What a learn is doing, in words. */
-export const learnStage = (j: LearnJob) => LEARN_STAGE[j.stage] ?? "Learning";
+export const learnStage = (j: LearnJob) => LEARN_STAGE[j.stage] ?? "正在学习";
 /** How much of the learn is done, as a whole percentage; null while the song plays, or while it waits to be learned
  *  behind another song (a percentage standing still for minutes read as stuck). */
 export const learnPct = (j: LearnJob) => j.fraction == null || j.stage === "queued" ? null : Math.floor(100 * j.fraction);
-/** "Learning… 40%" ("Learning…" while the song plays, "Waiting to learn" while another song is learned first). */
-export const learnLabel = (j: LearnJob) => j.stage === "queued" ? "Waiting to learn"
-  : learnPct(j) == null ? "Learning…" : `Learning… ${learnPct(j)}%`;
+/** Progress label shown by the UI. */
+export const learnLabel = (j: LearnJob) => j.stage === "queued" ? "排队等待学习"
+  : learnPct(j) == null ? "正在学习…" : `正在学习… ${learnPct(j)}%`;
 
 /** The music's shape for the lane's light ribbon (src-tauri/src/viz.rs), one frame every 1/60 s: `f` on the lane's
  *  clock (frames of 10 ms, as the notes), loudness and four bands 0..1, `beat` (jumps on a beat, decays) and
@@ -575,7 +575,7 @@ export async function openApp(trackId: string): Promise<string | null> {
 
 /** Saved settings: listening mode and the per-app control conveniences. */
 /** `listen_only`: OnKey controls no app (Spotify, Apple Music and YouTube all off): it follows songs by their sound alone. */
-export type Settings = { listening: boolean; control_spotify: boolean; control_music: boolean; youtube: boolean; listen_only?: boolean; hide_starters?: boolean;
+export type Settings = { version?: string; listening: boolean; control_spotify: boolean; control_music: boolean; youtube: boolean; listen_only?: boolean; hide_starters?: boolean;
   /** the learning models stay loaded between songs (on by default with 32 GB or more; never on an 8 GB Mac) */
   keep_models?: boolean; small_mac?: boolean;
   /** on battery, the lane draws at most 30 times a second (on by default) */
@@ -626,7 +626,7 @@ export type TimingResult = { ok?: boolean; confirm?: boolean; before_ms?: number
   correction_ms?: number; spread_ms?: number };
 /** A timing check of output `uid` done. */
 export async function checkOutputTiming(uid: string, run: TimingRun): Promise<TimingResult> {
-  return inApp() ? ((await invoke("output_timing_check", { uid, run })) as TimingResult) : { error: "Only in the app." };
+  return inApp() ? ((await invoke("output_timing_check", { uid, run })) as TimingResult) : { error: "此操作只能在随声练桌面应用中使用。" };
 }
 export async function resetOutputTiming(uid: string) {
   if (inApp()) await invoke("output_timing_reset", { uid });
@@ -811,7 +811,7 @@ export async function getTake(id: string): Promise<any | null> {
 export type ReportContents = { folder: string; bytes: number; files: { name: string; bytes: number; what: string }[] };
 
 export async function prepareReport(take: string | null): Promise<ReportContents> {
-  if (!inApp()) throw new Error("Reports are made in the OnKey app.");
+  if (!inApp()) throw new Error("问题报告只能在随声练桌面应用中生成。");
   return (await invoke("report_prepare", { take })) as ReportContents;
 }
 
@@ -873,7 +873,7 @@ export async function learnAnyway(id: string) {
 export type Perm = "ask" | "granted" | "denied" | "restricted" | "unknown";
 /** An app's Automation permission (may OnKey control it): "not_running" means macOS asks once OnKey first
  *  talks to it. */
-export type AppPerm = "ask" | "granted" | "denied" | "not_running" | "not_installed" | "unknown";
+export type AppPerm = "ask" | "granted" | "denied" | "restricted" | "not_running" | "not_installed" | "unknown";
 export type SetupStatus = { mic: Perm; audio: Perm; macos_ok: boolean; done: boolean;
                             control?: { spotify: AppPerm; music: AppPerm }; listen_only?: boolean;
                             asked?: { spotify?: AskAnswer; music?: AskAnswer } };

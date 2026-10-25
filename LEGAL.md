@@ -1,36 +1,18 @@
-# Rights holders and legal contact
+# 随声练法律说明
 
-OnKey is a free, open-source singing trainer that runs on the user's Mac. It doesn't provide, stream or
-download music: it listens to the music the user is already playing in their own music app, through macOS's
-audio-capture permission, to learn the singer's melody and show a pitch guide, and:
+随声练是一款在用户 Mac 上运行的开源歌唱练习应用。它不提供、串流或下载音乐，而是通过 macOS 的系统音频权限分析用户正在播放的音乐，学习歌手旋律并显示音高参考。
 
-- never saves, uploads, shares or exports that music's audio, or any part of it, such as a separated vocal.
-  Its published source can't either: there's no code in it that writes the music to disk. To
-  name a song it hasn't learned, it sends Apple's Shazam a short fingerprint of a few seconds of the music app's
-  sound (not the audio) to name the song. The microphone is never sent;
-- doesn't use any streaming service's developer API or SDK, and doesn't touch any app's files, memory or
-  encryption. By default (asked in setup, through macOS's Automation permission) it reads what Spotify or Apple
-  Music is playing and where, and can play, pause and seek there, as any remote control can; "Listen only" in
-  setup, or the app switches in Settings, turn this off;
-- makes only these network requests: synced lyrics from [LRCLIB](https://lrclib.net) when a song is first played,
-  unless the user turns "Show lyrics" off (the song's artist, title, album and length; the answer is kept on your Mac, so a song played again isn't
-  asked about again, and is never shared); a
-  Shazam signature of the music app's sound to Apple's ShazamKit, and the Apple Music ID it returns to Apple's
-  iTunes Lookup (for the song's length and album); an artist and title to Apple's iTunes Search, for album
-  covers, which link to the song on Apple Music (for the "Try these" starter songs, once each: the cover is then
-  kept on the Mac); the cover images themselves (from Spotify's, Apple's or YouTube's image hosts); and a check for a newer version of OnKey on GitHub, and its download (the learning models
-  come inside the app: nothing else is downloaded);
-- stores only the melody's notes (pitch and timing) that it learns, the lyrics it fetched, the user's own
-  voice (a recording sung with the music on speakers can contain some of it), and logs for diagnosing problems
-  (no audio or lyrics).
+- 随声练不会保存、上传、分享或导出正在播放的音乐音频，也不会保存从音乐中分离出的伴奏或人声。应用可保存每次练习的麦克风录音；如果音乐从扬声器播放，录音可能包含部分音乐。
+- 应用不使用音乐服务的开发者 API 或 SDK，也不读取播放器的文件、内存或加密信息。若用户授予 macOS 自动化权限，应用可以读取 Spotify 或 Apple Music 的当前播放信息，并进行播放、暂停或跳转等控制；用户可以关闭播放器控制功能。
+- 查询同步歌词时，应用可能向 LRCLIB 发送歌曲名、歌手、专辑和时长；查询歌曲信息或封面时，可能向 Apple 服务发送歌手、歌名或歌曲编号。随声练没有自有 Shazam Developer ID，因此本版本 ShazamKit 新歌识别能力尚未验证；如该功能可用，识别请求使用音乐指纹，不发送麦克风录音。
+- 应用在本机保存学习到的音符、歌词、练习录音、设置和诊断信息，数据位于 `~/Library/Application Support/io.github.aweiht.sing-practice/`。这一路径独立于 OnKey 原版的数据目录。
+- 应用自动更新已关闭，不会从 GitHub 自动检查或下载应用更新。故障诊断报告只在用户主动创建并自行提交后才会离开本机；日志可能包含歌曲名称。
+- 随声练网站源码不包含原站访问分析脚本。当前没有已部署的官网或官网域名。
 
-OnKey is made for personal practice at home. The README's [Using OnKey fairly](README.md#using-onkey-fairly)
-asks users to keep what it learns to themselves, not to post recordings or screen captures with the music, and not
-to use it as a karaoke system in public; OnKey offers no way to export or share learned songs.
+随声练面向个人练习。用户仍需遵守音乐服务条款以及适用的版权规定，不应公开分享未经授权的歌词、歌曲音频或歌曲分析数据。
 
-If you represent a rights holder or a service and have a concern about OnKey, please email
-**[hello@singonkey.app](mailto:hello@singonkey.app)**. We read every message and will respond promptly, and where a concern is valid we'll
-change or remove the feature involved.
+随声练改编自 Daniel Murrell 的 [dsmurrell/onkey（OnKey）](https://github.com/dsmurrell/onkey)，保留上游 MIT 许可证和署名。第三方组件的完整声明与许可证文本见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-OnKey isn't affiliated with or endorsed by Spotify, Apple or Google. Their names are trademarks of their owners
-and are used only to say which apps OnKey works with.
+随声练与 Spotify、Apple 或 Google 均无关联，也未获其认可。这些名称是各自所有者的商标，仅用于说明兼容的应用。
+
+法律或权利人问题请通过[随声练 GitHub Issues](https://github.com/aweiht/sing-practice/issues)反馈。Issues 可能公开；请勿在其中提交不应公开的个人信息。本项目当前没有单独公布的法律联系邮箱。
