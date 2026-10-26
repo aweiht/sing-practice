@@ -82,7 +82,7 @@ export default function Home() {
               <LaneArt />
             </div>
             <figcaption className="text-center text-xs text-muted">
-              音符轨道与音高位置示意图；当前没有演示视频或中文版发布安装包。
+              音符轨道与音高位置示意图，非真实演唱录像。
             </figcaption>
           </figure>
         </div>
@@ -143,8 +143,8 @@ export default function Home() {
       <section className="border-t border-line" aria-labelledby="get">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10">
           <div className="grid gap-2">
-            <h2 id="get" className="text-2xl font-semibold tracking-tight text-fg">从源码开始</h2>
-            <p className="text-muted">随声练遵循 MIT 许可证开源。{REQUIREMENTS.join("；")}。目前尚无中文版发布安装包。</p>
+            <h2 id="get" className="text-2xl font-semibold tracking-tight text-fg">下载安装</h2>
+            <p className="text-muted">随声练遵循 MIT 许可证开源。{REQUIREMENTS.join("；")}。提供包含学习模型的未公证预览安装包。</p>
           </div>
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <DownloadButton where="bottom" className={primary} />

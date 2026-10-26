@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DATA_DIR, GITHUB_URL, ISSUES_URL } from "@/lib/site";
+import { DATA_DIR, GITHUB_URL, ISSUES_URL, RELEASE_URL } from "@/lib/site";
 
 export type QA = { id: string; q: string; a: React.ReactNode };
 
@@ -44,7 +44,7 @@ export const FIRST_QUESTIONS: QA[] = [
   {
     id: "macs",
     q: "支持哪些 Mac？",
-    a: <p>目标环境为搭载 Apple 芯片（M1 或更新机型）、运行 macOS 14.2 或更新版本的 Mac。Intel Mac 不在支持范围内。源代码构建与签名安装包的可用性不同；当前没有中文版发布安装包。</p>,
+    a: <p>目标环境为搭载 Apple 芯片（M1 或更新机型）、运行 macOS 14.2 或更新版本的 Mac。Intel Mac 不在支持范围内。当前提供未经过 Apple 公证的预览安装包，首次打开可能需要按 macOS 提示手动确认。</p>,
   },
   {
     id: "platforms",
@@ -133,7 +133,7 @@ export const MORE_QUESTIONS: QA[] = [
   {
     id: "updates",
     q: "如何获取新版？",
-    a: <p>随声练尚无发布安装包，应用自动更新已关闭。请从<a href={GITHUB_URL}>源码仓库</a>查看变更，并按<Link href="/docs/">构建指南</Link>自行构建；仓库没有虚构的 Release 下载链接。</p>,
+    a: <p>应用自动更新已关闭。请到<a href={RELEASE_URL}>GitHub 发布页</a>下载安装包并查看说明；开发者也可按<Link href="/docs/">构建指南</Link>自行构建。</p>,
   },
 ];
 

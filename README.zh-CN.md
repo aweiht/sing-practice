@@ -8,7 +8,11 @@
 
 ## 当前可用状态
 
-本仓库只提供源码，目前没有中文版安装包或 Release 下载，没有已部署的网站或官网域名，也没有本项目自己的 Apple Developer ID 证书与公证配置。应用自动更新已关闭。从源码构建不等于获得签名或公证的发布安装包。
+[下载 Apple Silicon 预览版 DMG](https://github.com/aweiht/sing-practice/releases/download/v0.1.0-preview.1/sing-practice-0.1.0-preview.1-macos-arm64.dmg) · [发布说明与校验和](https://github.com/aweiht/sing-practice/releases/tag/v0.1.0-preview.1)
+
+适用于 M1 或更新芯片、macOS 14.2 或更新版本。打开 DMG 后将“随声练.app”拖到 Applications，无需安装编译工具；学习模型已包含在安装包中。
+
+此预览包使用无证书的 ad-hoc 签名，未经过 Apple 公证，首次打开可能被 macOS 阻止。确认来源和校验和后，按 [Apple 的打开指引](https://support.apple.com/zh-cn/102445)自行处理。应用自动更新已关闭；当前没有已部署的官网。
 
 本版本没有自有 Shazam Developer ID，因此 Shazam 新歌识别能力尚未验证，可能无法使用。中文歌词对齐能力也尚未验证。OnKey 上游记录的英文测量结果不代表本改版的性能验证结果。
 
@@ -31,7 +35,7 @@ npx tauri build
 
 模型脚本会下载应用所需模型并校验 SHA-256；模型文件不会提交到 Git。构建使用本机工具链，本项目不会为其签名或公证；首次打开时 macOS 可能阻止运行。该源码构建不会启用自动更新。
 
-本轮使用官方发布包中的模型，并逐项对照模型 manifest 校验 SHA-256 和文件尺寸后，`cargo test`、`cargo check` 与 `cargo build` 均通过。Python 模型导出路线本轮未重跑；签名、公证、真实音频运行和模型导出均未验证。
+预览包使用经 manifest 校验 SHA-256 和尺寸的模型；发布模式的 187 项测试通过，3 项真实录音相关测试跳过。App 的 ad-hoc 签名和模型完整性已检查；Apple 公证、真实音频运行、最低支持系统实机兼容性和 Python 模型导出路线未验证。
 
 单独构建静态网站文档：
 

@@ -1,5 +1,7 @@
 // 随声练网站使用的项目地址和基础事实。
 export const GITHUB_URL = "https://github.com/aweiht/sing-practice";
+export const RELEASE_URL = `${GITHUB_URL}/releases/tag/v0.1.0-preview.1`;
+export const INSTALLER_URL = `${GITHUB_URL}/releases/download/v0.1.0-preview.1/sing-practice-0.1.0-preview.1-macos-arm64.dmg`;
 
 // 当前尚未部署官网；此值暂记项目仓库地址，不作为已上线网站地址使用。
 export const SITE_URL = GITHUB_URL;

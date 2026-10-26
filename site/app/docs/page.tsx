@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GITHUB_URL, REQUIREMENTS, codeUrl } from "@/lib/site";
+import { GITHUB_URL, INSTALLER_URL, REQUIREMENTS, codeUrl } from "@/lib/site";
 
 export const metadata: Metadata = { title: "源码构建指南" };
 
@@ -7,7 +7,7 @@ export default function GettingStarted() {
   return (
     <>
       <h1>源码构建指南</h1>
-      <p className="lede">随声练目前没有中文版发布安装包，也没有已部署的官网。本页介绍如何从公开源码构建 Mac 应用。</p>
+      <p className="lede">可直接<a href={INSTALLER_URL}>下载 Apple Silicon 预览安装包</a>，打开 DMG 后拖到 Applications。模型已包含，无需自行编译。预览包未经过 Apple 公证；首次打开请参考<a href="https://support.apple.com/zh-cn/102445">Apple 的安全指引</a>。以下说明供需要从源码构建的开发者使用。</p>
 
       <h2>构建应用前需要准备</h2>
       <ul>
@@ -38,7 +38,7 @@ npx tauri build`}</code></pre>
       <p>网站代码位于 <code>site/</code>，单独安装依赖并生成静态文件：</p>
       <pre><code>{`npm --prefix site ci
 npm --prefix site run build`}</code></pre>
-      <p>构建结果写入 <code>site/out/</code>。当前只提供源码构建说明，没有官网域名或网站部署。</p>
+      <p>构建结果写入 <code>site/out/</code>。网站尚未部署，上述命令不会自动上线。</p>
 
       <h2>源代码与许可</h2>
       <p>

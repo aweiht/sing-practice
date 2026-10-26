@@ -26,7 +26,7 @@
 
 ## 验证与发布边界
 
-本轮未对真实音乐输入进行端到端实测。Shazam 新歌识别能力尚未验证；本项目没有自有 Shazam Developer ID。中文歌词对齐能力尚未验证。当前没有中文版发布安装包；本项目的源码构建未经项目方签名或公证。
+尚未对真实音乐输入进行端到端实测。Shazam 新歌识别能力尚未验证；本项目没有自有 Shazam Developer ID。中文歌词对齐能力尚未验证。当前提供 Apple Silicon 预览安装包，使用无证书 ad-hoc 签名，未经过 Apple 公证；首次打开可能被 macOS 阻止。
 
 ## Known issues
 
@@ -52,4 +52,4 @@ The desktop UI and website build dependencies are both pinned to Next.js 15.5.28
 
 ## Validation and release limits
 
-This work round did not run an end-to-end test with real music input. Shazam song recognition is unverified; this project has no project-owned Shazam Developer ID. Chinese lyric alignment is unverified. There is no Chinese-language release installer, and source builds are not signed or notarised by this project.
+End-to-end operation with real music input is unverified. Shazam song recognition is unverified; this project has no project-owned Shazam Developer ID. Chinese lyric alignment is unverified. An Apple Silicon preview installer is available with an ad-hoc signature and no Apple notarisation; macOS may block its first launch.

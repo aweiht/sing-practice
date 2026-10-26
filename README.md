@@ -8,7 +8,11 @@ This project is adapted from Daniel Murrell's [dsmurrell/onkey (OnKey)](https://
 
 ## Current availability
 
-This repository contains source code only. There is no Chinese-language installer or release download, no deployed website or website domain, and no project-owned Apple Developer ID certificate or notarisation setup. The app's automatic updater is disabled. A source build is not a signed or notarised release package.
+[Download the Apple Silicon preview DMG](https://github.com/aweiht/sing-practice/releases/download/v0.1.0-preview.1/sing-practice-0.1.0-preview.1-macos-arm64.dmg) · [Release notes and checksums](https://github.com/aweiht/sing-practice/releases/tag/v0.1.0-preview.1)
+
+Requires an M1 or later Mac and macOS 14.2 or later. Open the DMG and drag the app to Applications. Learning models are included; no compiler or developer tools are needed to install it.
+
+The preview uses an ad-hoc signature without a Developer ID certificate and is not notarised by Apple. macOS may block the first launch. After checking the source and checksum, follow [Apple's opening guidance](https://support.apple.com/102445). Automatic updates remain disabled, and no website is deployed.
 
 Shazam song recognition is not verified for this version because it has no project-owned Shazam Developer ID. Chinese lyric alignment is also unverified. Do not treat the upstream's English-language measurements as validated performance for this fork.
 
@@ -31,7 +35,7 @@ npx tauri build
 
 The model-fetch script downloads the required model files and checks their SHA-256 digests. Model files are not stored in Git. Builds use your local toolchain and are not signed or notarised by this project; macOS may block the app on first launch. This source build does not enable automatic updates.
 
-In this work round, `cargo test`, `cargo check`, and `cargo build` passed using models from the official release package after each model's SHA-256 and file size were checked against the model manifest. The Python export route was not rerun. Signing, notarisation, real-audio operation, and model export were not verified.
+The preview uses models checked against the manifest for SHA-256 and size. Release-mode tests passed (187 tests; 3 recording-related tests ignored). The app's ad-hoc signature and bundled model integrity were checked. Apple notarisation, real-audio operation, hardware compatibility at the minimum supported OS, and the Python model-export route remain unverified.
 
 To build the static website documentation separately:
 
